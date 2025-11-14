@@ -1,1 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>My50/30/20 — Budget Planner</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0f172a">
 
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<!-- jsPDF for PDF export -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+
+<!-- Firebase (compat) - optional, replace config in app.js -->
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+
+
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+<header>
+<h1>My50/30/20</h1>
+<p class="subtitle">Dark-mode budgeting with live FX, cloud save, export, and premium upgrade.</p>
+</header>
+
+
+<main class="grid">
+<section class="card left">
+<div class="section-title">
+<span>Settings</span>
+<span class="pill" id="periodPill">Monthly</span>
+</div>
+
+
+<div class="controls">
+<div class="settings-row">
+<div class="field"><label>Currency</label>
+<select id="currency">
+<option value="USD" selected>USD $</option>
+<option value="KES">KES KSh</option>
+<option value="EUR">EUR €</option>
+<option value="GBP">GBP £</option>
+<option value="NGN">NGN ₦</option>
+<option value="ZAR">ZAR R</option>
+<option value="TZS">TZS TSh</option>
+<option value="UGX">UGX USh</option>
+<option value="INR">INR ₹</option>
+<option value="JPY">JPY ¥</option>
+<option value="CAD">CAD $</option>
+<option value="AUD">AUD $</option>
+</select>
+</div>
+
+
+<div class="field"><label>Period</label>
+<select id="period"><option value="monthly" selected>Monthly</option><option value="annual">Annual</option></select>
+</div>
+
+
+<div class="field"><label>Calc Mode</label>
+<select id="calcMode"><option value="auto" selected>Auto</option><option value="manual">Manual</option></select>
+</div>
+
+
+<div class="field auth"><button id="authBtn" class="btn ghost">Sign in (Google)</button></div>
+</div>
+
+
+</html>
