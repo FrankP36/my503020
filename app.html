@@ -1,53 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>50/30/20 Budget App</title>
-  <link rel="stylesheet" href="style.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Budget Dashboard</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-  <!-- ===== Header ===== -->
-  <header>
-    <h1>50/30/20 Budget Planner</h1>
-    <button id="darkModeToggle">Toggle Dark Mode</button>
-    <button id="googleSignInBtn">Sign in with Google</button>
-    <button id="logoutBtn">Logout</button>
-  </header>
+<div class="container">
+  <h1>50/30/20 Budget Dashboard</h1>
+  
+  <!-- Dark Mode Toggle -->
+  <button id="toggle-dark">Toggle Dark Mode</button>
 
-  <!-- ===== Budget Form ===== -->
-  <section>
-    <form id="budgetForm">
-      <label for="income">Enter Your Monthly Income:</label>
-      <input type="number" id="income" placeholder="e.g. 3000" required>
-      <button type="submit">Calculate Budget</button>
-    </form>
-  </section>
+  <!-- Income Input -->
+  <div class="income-section">
+    <label for="income">Total Income:</label>
+    <input type="number" id="income" placeholder="Enter your income">
+    <button id="calculate">Calculate 50/30/20</button>
+  </div>
 
-  <!-- ===== Budget Results ===== -->
-  <section class="budget-results">
-    <div>
-      <h2>Needs (50%)</h2>
-      <ul id="needsList"><li>$0.00</li></ul>
-    </div>
-    <div>
-      <h2>Wants (30%)</h2>
-      <ul id="wantsList"><li>$0.00</li></ul>
-    </div>
-    <div>
-      <h2>Savings (20%)</h2>
-      <ul id="savingsList"><li>$0.00</li></ul>
-    </div>
-  </section>
+  <!-- Budget Results -->
+  <div id="results">
+    <p>Needs (50%): <span id="needs">0</span></p>
+    <p>Wants (30%): <span id="wants">0</span></p>
+    <p>Savings (20%): <span id="savings">0</span></p>
+  </div>
 
-  <!-- ===== Chart Section ===== -->
-  <section class="chart-section">
-    <canvas id="budgetChart" width="400" height="400"></canvas>
-    <button id="chartToggleBtn">Toggle Chart Type</button>
-  </section>
+  <!-- Chart Section -->
+  <canvas id="budgetChart" width="400" height="400"></canvas>
+  <button id="toggleChart">Toggle Pie/Bar Chart</button>
+</div>
 
-  <!-- ===== Scripts ===== -->
-  <script type="module" src="app.js"></script>
+<!-- App Logic -->
+<script type="module" src="app.js"></script>
 </body>
 </html>
