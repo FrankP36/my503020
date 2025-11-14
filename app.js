@@ -1,43 +1,60 @@
-// My50/30/20 - app.js (dark-mode starter)
-// NOTE: Replace FIREBASE_CONFIG and STRIPE_LINK placeholders below.
+let darkMode = localStorage.getItem('darkMode') === 'true';
+if(darkMode) document.body.classList.add('dark');
 
+const toggleDark = document.getElementById('toggle-dark');
+toggleDark.addEventListener('click', () => {
+  document.body.classList.toggle('dark');
+  localStorage.setItem('darkMode', document.body.classList.contains('dark'));
+});
 
-const FIREBASE_CONFIG = {
-apiKey: "REPLACE_API_KEY",
-authDomain: "REPLACE_AUTH_DOMAIN",
-projectId: "REPLACE_PROJECT_ID",
-storageBucket: "REPLACE_STORAGE_BUCKET",
-messagingSenderId: "REPLACE_MSG_ID",
-appId: "REPLACE_APP_ID"
-};
-const STRIPE_CHECKOUT_URL = "https://buy.stripe.com/test_XXXX"; // replace
+const incomeInput = document.getElementById('income');
+const calculateBtn = document.getElementById('calculate');
+const needsEl = document.getElementById('needs');
+const wantsEl = document.getElementById('wants');
+const savingsEl = document.getElementById('savings');
+const ctx = document.getElementById('budgetChart').getContext('2d');
 
+let chartType = localStorage.getItem('chartType') || 'pie';
+let chart;
 
-// Lightweight app packed into one file for GitHub Pages
-(function(){
-const LS_FX = 'bp_fx_rates_v1';
-const LS_FX_TIME = 'bp_fx_time_v1';
-const LS_LAST = 'bp_last_budget_v1';
-const CUR = { USD:'$', KES:'KSh', EUR:'€', GBP:'£', NGN:'₦', ZAR:'R', TZS:'TSh', UGX:'USh', INR:'₹', JPY:'¥', CAD:'$', AUD:'$' };
-let FX = { USD:1, KES:129, EUR:0.93, GBP:0.81, NGN:1600, ZAR:18.5, TZS:2590, UGX:3800, INR:84, JPY:153, CAD:1.38, AUD:1.52 };
-try{ const s = JSON.parse(localStorage.getItem(LS_FX) || 'null'); if(s) FX = {...FX,...s}; }catch{}
+function updateChart(needs, wants, savings) {
+  if(chart) chart.destroy();
+  chart = new Chart(ctx, {
+    type: chartType,
+    data: {
+      labels: ['Needs', 'Wants', 'Savings'],
+      datasets: [{
+        label: 'Budget Allocation',
+        data: [needs, wants, savings],
+        backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56']
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'top' }
+      }
+    }
+  });
+}
 
+calculateBtn.addEventListener('click', () => {
+  const income = parseFloat(incomeInput.value) || 0;
+  const needs = (income * 0.5).toFixed(2);
+  const wants = (income * 0.3).toFixed(2);
+  const savings = (income * 0.2).toFixed(2);
 
-const $ = id => document.getElementById(id);
-const els = {
-currency: $('currency'), period:$('period'), calcMode:$('calcMode'), income:$('income'), curSymbol1:$('curSymbol1'), catBody:$('catBody'),
-addRow:$('addRow'), reset:$('reset'), exportCsv:$('exportCsv'), exportPdf:$('exportPdf'), copySnapshot:$('copySnapshot'),
-saveCloud:$('saveCloud'), loadCloud:$('loadCloud'), authBtn:$('authBtn'), userInfoArea:$('userInfoArea'), stripeBtn:$('stripeBtn'),
-incomeLabel:$('incomeVal'), incomeVal:$('incomeVal'), needsVal:$('needsVal'), wantsVal:$('wantsVal'), savingsVal:$('savingsVal'), totalVal:$('totalVal'), remainVal:$('remainVal'), allocChart:$('allocChart'), fxStatus:$('fxStatus'), advice:$('advice'), periodPill:$('periodPill')
-};
+  needsEl.textContent = needs;
+  wantsEl.textContent = wants;
+  savingsEl.textContent = savings;
 
+  updateChart(needs, wants, savings);
+});
 
-const TYPES = ['Needs','Wants','Savings'];
-let state = { currency:'USD', period:'monthly', calcMode:'auto', incomeUSD:3500, rows:[], user:null };
-
-
-// Firebase optional init
-let db=null, auth=null, firebaseEnabled=false;
-try{
-if (FIREBASE_CONFIG.apiKey && !FIREBASE_CONFIG.apiKey.startsWith('REPLACE')){
-firebase.i
+const toggleChartBtn = document.getElementById('toggleChart');
+toggleChartBtn.addEventListener('click', () => {
+  chartType = chartType === 'pie' ? 'bar' : 'pie';
+  localStorage.setItem('chartType', chartType);
+  const income = parseFloat(incomeInput.value) || 0;
+  updateChart((income*0.5).toFixed(2), (income*0.3).toFixed(2), (income*0.2).toFixed(2));
+});
