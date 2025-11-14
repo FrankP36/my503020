@@ -3,239 +3,70 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>50/30/20 Budget App</title>
-
-<style>
-  body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    background: #fff;
-    color: #222;
-    transition: 0.3s;
-  }
-  body.dark {
-    background: #121212;
-    color: #eee;
-  }
-  .container {
-    max-width: 500px;
-    margin: auto;
-    padding: 20px;
-    margin-top: 20px;
-  }
-  input, button {
-    width: 100%;
-    padding: 12px;
-    margin-top: 10px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    font-size: 16px;
-  }
-  button {
-    background: #4CAF50;
-    color: #fff;
-    border: none;
-    cursor: pointer;
-  }
-  button:hover { opacity: 0.9; }
-  #logout { background: #E53935; }
-  #toggle-dark { background: #333; }
-  canvas { margin-top: 20px; }
-  .hidden { display: none; }
-  .error { color: red; text-align: center; }
-</style>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<title>Login • 50/30/20 Budget App</title>
+<link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
 <div class="container">
 
-  <h1 style="text-align:center;">50/30/20 Budget App</h1>
+  <h1>Welcome</h1>
+  <h2>Sign in to continue</h2>
 
-  <!-- —–––––––––– LOGIN SECTION ––––––––––— -->
-  <div id="auth-section">
+  <button id="google-login">Sign in with Google</button>
 
-    <button id="google-login">Sign in with Google</button>
+  <h3>Or use Email</h3>
+  <input type="email" id="email" placeholder="Email">
+  <input type="password" id="password" placeholder="Password">
 
-    <h3 style="text-align:center;">Or use Email</h3>
+  <button id="login-btn">Login</button>
+  <button id="signup-btn">Sign Up</button>
 
-    <input type="email" id="email" placeholder="Email">
-    <input type="password" id="password" placeholder="Password">
-
-    <button id="login-btn">Login</button>
-    <button id="signup-btn">Sign Up</button>
-
-    <p id="auth-error" class="error"></p>
-  </div>
-
-  <!-- —–––––––– DASHBOARD SECTION ––––––––––— -->
-  <div id="app-section" class="hidden">
-
-    <button id="logout">Logout</button>
-    <button id="toggle-dark">Toggle Dark Mode</button>
-
-    <h2>Enter Your Income</h2>
-    <input type="number" id="income" placeholder="Enter income">
-
-    <button id="calculate">Calculate 50/30/20</button>
-
-    <div id="results">
-      <p>Needs (50%): <strong id="needs">0</strong></p>
-      <p>Wants (30%): <strong id="wants">0</strong></p>
-      <p>Savings (20%): <strong id="savings">0</strong></p>
-    </div>
-
-    <button id="toggleChart">Toggle Chart (Pie / Bar)</button>
-    <canvas id="budgetChart" width="400" height="400"></canvas>
-  </div>
+  <p id="auth-error" class="error"></p>
 
 </div>
 
-
 <script type="module">
-
-/* ---------------- IMPORT FIREBASE ---------------- */
 import { auth, provider } from './firebase-config.js';
 import { 
-  signInWithPopup, 
-  signInWithEmailAndPassword, 
-  createUserWithEmailAndPassword, 
-  signOut,
+  signInWithPopup,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
   onAuthStateChanged 
 } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-auth.js";
 
-
-/* ---------------- ELEMENTS ---------------- */
-const authSection = document.getElementById("auth-section");
-const appSection  = document.getElementById("app-section");
-
 const googleLogin = document.getElementById("google-login");
-const loginBtn    = document.getElementById("login-btn");
-const signupBtn   = document.getElementById("signup-btn");
-const logoutBtn   = document.getElementById("logout");
+const loginBtn = document.getElementById("login-btn");
+const signupBtn = document.getElementById("signup-btn");
+const email = document.getElementById("email");
+const password = document.getElementById("password");
+const authError = document.getElementById("auth-error");
 
-const emailInput  = document.getElementById("email");
-const passInput   = document.getElementById("password");
-const authError   = document.getElementById("auth-error");
-
-const toggleDark  = document.getElementById("toggle-dark");
-const incomeInput = document.getElementById("income");
-const calculateBtn= document.getElementById("calculate");
-const toggleChartBtn = document.getElementById("toggleChart");
-
-const needsEl   = document.getElementById("needs");
-const wantsEl   = document.getElementById("wants");
-const savingsEl = document.getElementById("savings");
-const ctx       = document.getElementById("budgetChart").getContext("2d");
-
-
-/* ---------------- DARK MODE ---------------- */
-if (localStorage.getItem("darkMode") === "true") {
-  document.body.classList.add("dark");
-}
-
-toggleDark.addEventListener("click", () => {
-  document.body.classList.toggle("dark");
-  localStorage.setItem("darkMode", document.body.classList.contains("dark"));
-});
-
-
-/* ---------------- CHARTS ---------------- */
-let chartType = localStorage.getItem("chartType") || "pie";
-let chart;
-
-function updateChart(needs, wants, savings) {
-  if (chart) chart.destroy();
-
-  chart = new Chart(ctx, {
-    type: chartType,
-    data: {
-      labels: ["Needs", "Wants", "Savings"],
-      datasets: [{
-        data: [needs, wants, savings],
-        backgroundColor: ["#FF6384", "#36A2EB", "#FFCE56"]
-      }]
-    },
-    options: { responsive: true }
-  });
-}
-
-toggleChartBtn.addEventListener("click", () => {
-  chartType = chartType === "pie" ? "bar" : "pie";
-  localStorage.setItem("chartType", chartType);
-
-  let income = Number(incomeInput.value) || 0;
-  updateChart((income * 0.5), (income * 0.3), (income * 0.2));
-});
-
-
-/* ---------------- CALCULATE ---------------- */
-calculateBtn.addEventListener("click", () => {
-  let income = Number(incomeInput.value) || 0;
-
-  let needs = income * 0.5;
-  let wants = income * 0.3;
-  let savings = income * 0.2;
-
-  needsEl.textContent = needs.toFixed(2);
-  wantsEl.textContent = wants.toFixed(2);
-  savingsEl.textContent = savings.toFixed(2);
-
-  updateChart(needs, wants, savings);
-});
-
-
-/* ---------------- GOOGLE LOGIN ---------------- */
-googleLogin.addEventListener("click", async () => {
+googleLogin.onclick = async () => {
   try {
     await signInWithPopup(auth, provider);
-  } catch (err) {
-    authError.textContent = err.message;
-  }
-});
+    window.location.href = "app.html";
+  } catch (e) { authError.textContent = e.message; }
+};
 
-
-/* ---------------- EMAIL LOGIN ---------------- */
-loginBtn.addEventListener("click", async () => {
+loginBtn.onclick = async () => {
   try {
-    await signInWithEmailAndPassword(auth, emailInput.value, passInput.value);
-  } catch (err) {
-    authError.textContent = err.message;
-  }
-});
+    await signInWithEmailAndPassword(auth, email.value, password.value);
+    window.location.href = "app.html";
+  } catch (e) { authError.textContent = e.message; }
+};
 
-
-/* ---------------- SIGN UP ---------------- */
-signupBtn.addEventListener("click", async () => {
+signupBtn.onclick = async () => {
   try {
-    await createUserWithEmailAndPassword(auth, emailInput.value, passInput.value);
-  } catch (err) {
-    authError.textContent = err.message;
-  }
+    await createUserWithEmailAndPassword(auth, email.value, password.value);
+    window.location.href = "app.html";
+  } catch (e) { authError.textContent = e.message; }
+};
+
+onAuthStateChanged(auth, user => {
+  if (user) window.location.href = "app.html";
 });
-
-
-/* ---------------- LOGOUT ---------------- */
-logoutBtn.addEventListener("click", async () => {
-  await signOut(auth);
-  location.reload();
-});
-
-
-/* ---------------- AUTH STATE CHANGE ---------------- */
-onAuthStateChanged(auth, (user) => {
-  if (user) {
-    authSection.classList.add("hidden");
-    appSection.classList.remove("hidden");
-  } else {
-    authSection.classList.remove("hidden");
-    appSection.classList.add("hidden");
-  }
-});
-
 </script>
 
 </body>
