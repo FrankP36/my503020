@@ -1,75 +1,45 @@
 import { auth } from "./firebase-config.js";
-import { signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-auth.js";
+import {
+  signInWithEmailAndPassword,
+  GoogleAuthProvider,
+  signInWithPopup,
+} from "firebase/auth";
 
-const logoutBtn = document.getElementById("logout");
-const toggleDark = document.getElementById("toggle-dark");
-const incomeInput = document.getElementById("income");
-const calculateBtn = document.getElementById("calculate");
-const toggleChartBtn = document.getElementById("toggleChart");
+/* ---- EMAIL LOGIN ---- */
+document.getElementById("login-form")?.addEventListener("submit", async (e) => {
+  e.preventDefault();
 
-const needsEl = document.getElementById("needs");
-const wantsEl = document.getElementById("wants");
-const savingsEl = document.getElementById("savings");
-const ctx = document.getElementById("budgetChart").getContext("2d");
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value;
 
-/* AUTH PROTECTION */
-onAuthStateChanged(auth, user => {
-  if (!user) window.location.href = "index.html";
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+    window.location.href = "app.html";
+  } catch (err) {
+    document.getElementById("login-error").innerText = err.message;
+  }
 });
 
-/* LOGOUT */
-logoutBtn.onclick = async () => {
-  await signOut(auth);
-  window.location.href = "index.html";
-};
+/* ---- GOOGLE LOGIN ---- */
+const googleBtn = document.getElementById("google-login");
 
-/* DARK MODE */
-if (localStorage.getItem("darkMode") === "true") {
-  document.body.classList.add("dark");
-}
+if (googleBtn) {
+  googleBtn.addEventListener("click", async () => {
+    const provider = new GoogleAuthProvider();
 
-toggleDark.onclick = () => {
-  document.body.classList.toggle("dark");
-  localStorage.setItem("darkMode", document.body.classList.contains("dark"));
-};
-
-/* CALCULATOR + CHART */
-let chartType = localStorage.getItem("chartType") || "pie";
-let chart;
-
-function updateChart(needs, wants, savings) {
-  if (chart) chart.destroy();
-
-  chart = new Chart(ctx, {
-    type: chartType,
-    data: {
-      labels: ["Needs", "Wants", "Savings"],
-      datasets: [{
-        data: [needs, wants, savings],
-        backgroundColor: ["#FF6384", "#36A2EB", "#FFCE56"]
-      }]
+    try {
+      await signInWithPopup(auth, provider);
+      window.location.href = "app.html";
+    } catch (err) {
+      document.getElementById("login-error").innerText =
+        "Google Sign-in failed: " + err.message;
     }
   });
 }
 
-calculateBtn.onclick = () => {
-  let income = Number(incomeInput.value) || 0;
-
-  let needs = income * 0.5;
-  let wants = income * 0.3;
-  let savings = income * 0.2;
-
-  needsEl.textContent = needs.toFixed(2);
-  wantsEl.textContent = wants.toFixed(2);
-  savingsEl.textContent = savings.toFixed(2);
-
-  updateChart(needs, wants, savings);
-};
-
-toggleChartBtn.onclick = () => {
-  chartType = chartType === "pie" ? "bar" : "pie";
-  localStorage.setItem("chartType", chartType);
-
-  let income = Number(incomeInput.value) || 0;
-  updateChart(income * 0.5, income * 0.3, income * 0.2);
-};
+/* ---- LOGOUT ---- */
+export function logout() {
+  auth.signOut().then(() => {
+    window.location.href = "index.html";
+  });
+}
