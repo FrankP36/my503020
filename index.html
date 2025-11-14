@@ -3,28 +3,74 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Budget App Login</title>
-  <script type="module" src="auth.js"></script>
+  <title>50/30/20 Budget App Login</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 dark:bg-gray-900 transition-colors duration-300 flex items-center justify-center h-screen">
+<body class="bg-gray-100 dark:bg-gray-900 transition-colors duration-300 flex items-center justify-center min-h-screen">
 
-  <div class="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg w-full max-w-md">
-    <h2 class="text-2xl font-bold mb-6 text-center text-gray-900 dark:text-gray-100">Login / Register</h2>
-
-    <div class="flex justify-end mb-4">
-      <button id="darkModeToggle" class="text-sm px-2 py-1 border rounded dark:text-gray-100 dark:border-gray-300">Toggle Dark Mode</button>
-    </div>
+  <div class="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-md w-full max-w-sm">
+    <h1 class="text-2xl font-bold mb-6 text-gray-900 dark:text-gray-100 text-center">Budget App Login</h1>
 
     <input id="email" type="email" placeholder="Email" class="w-full p-3 mb-4 border rounded dark:bg-gray-700 dark:text-gray-100" />
     <input id="password" type="password" placeholder="Password" class="w-full p-3 mb-4 border rounded dark:bg-gray-700 dark:text-gray-100" />
 
-    <button id="loginBtn" class="w-full bg-blue-500 text-white p-3 rounded mb-2 hover:bg-blue-600 transition">Login</button>
-    <button id="registerBtn" class="w-full bg-green-500 text-white p-3 rounded mb-2 hover:bg-green-600 transition">Register</button>
-    <button id="googleBtn" class="w-full bg-red-500 text-white p-3 rounded hover:bg-red-600 transition">Sign in with Google</button>
+    <button id="loginBtn" class="w-full bg-blue-500 text-white p-3 rounded mb-4 hover:bg-blue-600 transition">Login</button>
+    <button id="signupBtn" class="w-full bg-green-500 text-white p-3 rounded hover:bg-green-600 transition">Sign Up</button>
 
-    <div id="message" class="mt-4 text-center text-red-500 dark:text-red-400"></div>
+    <div class="mt-4 text-center text-gray-700 dark:text-gray-300">
+      <label><input type="checkbox" id="darkModeToggle" /> Dark Mode</label>
+    </div>
   </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js";
+
+    // Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyDtLg-93_BcASTg4E5oniGlMkGXQOAo94k",
+      authDomain: "my503020.firebaseapp.com",
+      projectId: "my503020",
+      storageBucket: "my503020.firebasestorage.app",
+      messagingSenderId: "612049785066",
+      appId: "1:612049785066:web:ba85e8e2af24a05b894793",
+      measurementId: "G-N31DMC43S9"
+    };
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    // Redirect if already logged in
+    onAuthStateChanged(auth, user => { if(user) window.location.href="app.html"; });
+
+    // Login
+    document.getElementById("loginBtn").addEventListener("click", () => {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      signInWithEmailAndPassword(auth, email, password)
+        .then(() => window.location.href="app.html")
+        .catch(err => alert(err.message));
+    });
+
+    // Sign Up
+    document.getElementById("signupBtn").addEventListener("click", () => {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      createUserWithEmailAndPassword(auth, email, password)
+        .then(() => window.location.href="app.html")
+        .catch(err => alert(err.message));
+    });
+
+    // Dark mode toggle
+    const toggle = document.getElementById("darkModeToggle");
+    if(localStorage.getItem("darkMode")==="true") {
+      document.documentElement.classList.add("dark");
+      toggle.checked = true;
+    }
+    toggle.addEventListener("change", () => {
+      document.documentElement.classList.toggle("dark");
+      localStorage.setItem("darkMode", document.documentElement.classList.contains("dark"));
+    });
+  </script>
 
 </body>
 </html>
