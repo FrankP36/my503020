@@ -1,9 +1,8 @@
-import { auth } from "./firebase-config.js";
+import { auth, provider } from "./firebase-config.js";
 import {
   signInWithEmailAndPassword,
-  GoogleAuthProvider,
-  signInWithPopup,
-} from "firebase/auth";
+  signInWithPopup
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 /* ---- EMAIL LOGIN ---- */
 document.getElementById("login-form")?.addEventListener("submit", async (e) => {
@@ -25,8 +24,6 @@ const googleBtn = document.getElementById("google-login");
 
 if (googleBtn) {
   googleBtn.addEventListener("click", async () => {
-    const provider = new GoogleAuthProvider();
-
     try {
       await signInWithPopup(auth, provider);
       window.location.href = "app.html";
