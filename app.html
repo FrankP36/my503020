@@ -3,30 +3,93 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Budget Dashboard</title>
+<title>Budget Planner — Live FX & 50/30/20</title>
 <link rel="stylesheet" href="style.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 <div class="container">
-  <h1>Budget Dashboard</h1>
-  <div style="display:flex;justify-content:space-between;align-items:center;">
+  <h1>Budget Planner</h1>
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
     <button id="toggle-dark">Toggle Dark Mode</button>
     <button id="logoutBtn">Logout</button>
   </div>
 
+  <!-- Settings -->
+  <div class="settings">
+    <label>Currency:
+      <select id="currency">
+        <option value="USD" selected>USD $</option>
+        <option value="EUR">EUR €</option>
+        <option value="GBP">GBP £</option>
+        <option value="JPY">JPY ¥</option>
+        <option value="CAD">CAD $</option>
+        <option value="AUD">AUD $</option>
+        <option value="INR">INR ₹</option>
+        <option value="NGN">NGN ₦</option>
+        <option value="ZAR">ZAR R</option>
+        <option value="KES">KES KSh</option>
+        <option value="TZS">TZS TSh</option>
+        <option value="UGX">UGX USh</option>
+      </select>
+    </label>
+
+    <label>Period:
+      <select id="period">
+        <option value="monthly" selected>Monthly</option>
+        <option value="annual">Annual</option>
+      </select>
+    </label>
+
+    <label>Calculation:
+      <select id="calcMode">
+        <option value="auto" selected>Auto</option>
+        <option value="manual">Manual</option>
+      </select>
+    </label>
+
+    <button id="calcBtn" style="display:none;">Calculate</button>
+    <button id="share">Copy Snapshot</button>
+    <p id="fxStatus" class="small"></p>
+  </div>
+
+  <!-- Income -->
   <div>
     <label>Total Income:</label>
-    <input type="number" id="income" placeholder="Enter your income">
-    <button id="calculate">Calculate 50/30/20</button>
+    <input type="number" id="income" value="3500">
   </div>
 
+  <!-- Category Table -->
+  <h3>Categories</h3>
+  <table id="catTable">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Amount</th>
+        <th>Type</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="catBody"></tbody>
+  </table>
+  <button id="addRow">+ Add Category</button>
+  <button id="reset">Reset to Example</button>
+
+  <!-- Results -->
+  <h3>Results</h3>
   <div id="results">
-    <p>Needs (50%): <span id="needs">0</span></p>
-    <p>Wants (30%): <span id="wants">0</span></p>
-    <p>Savings (20%): <span id="savings">0</span></p>
+    <p>Income: <span id="incomeVal"></span></p>
+    <p>Needs: <span id="needsVal"></span></p>
+    <p>Wants: <span id="wantsVal"></span></p>
+    <p>Savings: <span id="savingsVal"></span></p>
+    <p>Total Expenses: <span id="totalVal"></span></p>
+    <p>Remaining: <span id="remainVal"></span></p>
+    <p>Savings %: <span id="savingsPct"></span></p>
+    <p>50/30/20 vs Actual: <span id="fiveThreeTwo"></span></p>
+    <p id="advice" class="small"></p>
   </div>
 
+  <!-- Chart -->
   <canvas id="budgetChart" width="400" height="400"></canvas>
   <button id="toggleChart">Toggle Pie/Bar Chart</button>
 </div>
