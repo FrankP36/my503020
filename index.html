@@ -4,72 +4,919 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>My50/30/20 — Budget Planner</title>
-<link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#0f172a">
 
+<!-- PWA + meta -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f172a">
 
 <!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <!-- jsPDF for PDF export -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-
-<!-- Firebase (compat) - optional, replace config in app.js -->
+<!-- Firebase (compat build) -->
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 
-
-<link rel="stylesheet" href="style.css">
+<style>
+  :root {
+    --bg: #0f172a;
+    --card: #111827;
+    --muted: #94a3b8;
+    --text: #e5e7eb;
+    --accent: #22c55e;
+    --warn: #f59e0b;
+    --danger: #ef4444;
+    --input: #1f2937;
+    --ring: #2563eb33;
+    --blue: #2563eb;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, "Helvetica Neue", Arial, Noto Sans;
+    background: linear-gradient(180deg, #0b1220, var(--bg));
+    color: var(--text);
+    min-height: 100vh;
+    display: grid;
+    place-items: start center;
+    padding: 20px;
+  }
+  .wrap { width: 100%; max-width: 1080px; display: grid; gap: 14px; }
+  header { display: grid; gap: 6px; }
+  header h1 { margin: 0; font-size: clamp(20px, 3vw, 30px); }
+  header p { margin: 0; color: var(--muted); }
+  .grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+  @media (min-width: 980px){ .grid { grid-template-columns: 1.15fr 1fr; } }
+  .card {
+    background: linear-gradient(180deg, #0d1220, var(--card));
+    border: 1px solid #1f2937;
+    border-radius: 14px;
+    padding: 14px;
+    box-shadow: 0 10px 24px rgba(0,0,0,0.25);
+  }
+  .section-title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-weight: 600; }
+  .controls { display: grid; gap: 10px; }
+  .row { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 10px; }
+  label { color: var(--muted); font-size: 14px; }
+  .input, select, .btn {
+    background: var(--input);
+    color: var(--text);
+    border: 1px solid #374151;
+    border-radius: 10px;
+    padding: 10px 12px;
+    outline: none;
+  }
+  .input { display: flex; align-items: center; gap: 8px; }
+  .input:focus-within, select:focus { border-color: var(--blue); box-shadow: 0 0 0 4px var(--ring); }
+  .input input[type="number"], .input input[type="text"] {
+    flex: 1; background: transparent; border: none; color: var(--text); font-size: 15px; min-width: 0; outline: none;
+    -moz-appearance: textfield;
+  }
+  .hint { font-size: 12px; color: var(--muted); }
+  .pill { display: inline-flex; gap: 6px; align-items: center; padding: 6px 10px; border-radius: 999px; font-size: 12px; border: 1px solid #334155; color: var(--muted); background: #0b1324; }
+  .btn { cursor: pointer; font-weight: 600; }
+  .btn.primary { background: var(--blue); border-color: var(--blue); }
+  .btn.ghost { background: transparent; border-color: #334155; }
+  .flex { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .totals { display: grid; gap: 10px; }
+  .stat { display: flex; justify-content: space-between; align-items: baseline; padding: 10px 12px; border-radius: 10px; border: 1px solid #1f2937; background: #0c1426; }
+  .stat .label { color: var(--muted); font-size: 13px; }
+  .stat .value { font-weight: 700; font-size: 18px; }
+  .value.positive { color: var(--accent); }
+  .value.warn { color: var(--warn); }
+  .value.negative { color: var(--danger); }
+  .table { width: 100%; border-collapse: collapse; }
+  .table th, .table td { padding: 6px 8px; border-bottom: 1px solid #1f2937; font-size: 14px; }
+  .table th { text-align: left; color: var(--muted); font-weight: 600; }
+  .small { font-size: 12px; color: var(--muted); }
+  .row-actions { display: flex; gap: 6px; }
+  .actions-row { display:flex; gap:8px; margin-top:8px; flex-wrap:wrap; }
+  canvas { max-width:100%; height:220px; }
+  .userInfo { font-size:13px; color:var(--muted); display:flex; gap:8px; align-items:center; }
+  .locked { opacity: 0.5; pointer-events: none; }
+</style>
 </head>
 <body>
 <div class="wrap">
-<header>
-<h1>My50/30/20</h1>
-<p class="subtitle">Dark-mode budgeting with live FX, cloud save, export, and premium upgrade.</p>
-</header>
+  <header>
+    <h1>My50/30/20 — Budget Planner</h1>
+    <p>Plan your budget with live exchange rates, visual charts, cloud save, and 50/30/20 guidance. Built for quick GitHub Pages deployment.</p>
+  </header>
 
+  <div class="grid">
+    <!-- LEFT: Settings & Categories -->
+    <section class="card">
+      <div class="section-title">
+        <span>Settings</span>
+        <span class="pill" id="periodPill">Monthly</span>
+      </div>
 
-<main class="grid">
-<section class="card left">
-<div class="section-title">
-<span>Settings</span>
-<span class="pill" id="periodPill">Monthly</span>
+      <div class="controls">
+        <div class="flex" style="justify-content: space-between;">
+          <div class="flex" style="gap:12px; align-items:center;">
+            <div>
+              <label for="currency" class="hint">Currency</label><br>
+              <select id="currency" title="Display currency" class="input">
+                <option value="USD" selected>USD $</option>
+                <option value="EUR">EUR €</option>
+                <option value="GBP">GBP £</option>
+                <option value="JPY">JPY ¥</option>
+                <option value="CAD">CAD $</option>
+                <option value="AUD">AUD $</option>
+                <option value="INR">INR ₹</option>
+                <option value="NGN">NGN ₦</option>
+                <option value="ZAR">ZAR R</option>
+                <option value="KES">KES KSh</option>
+                <option value="TZS">TZS TSh</option>
+                <option value="UGX">UGX USh</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="period" class="hint">Period</label><br>
+              <select id="period" title="Monthly or Annual" class="input">
+                <option value="monthly" selected>Monthly</option>
+                <option value="annual">Annual</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="calcMode" class="hint">Calculation</label><br>
+              <select id="calcMode" title="Auto or Manual" class="input">
+                <option value="auto" selected>Auto</option>
+                <option value="manual">Manual</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="flex" style="align-items:center;">
+            <button id="authBtn" class="btn ghost">Sign in (Google)</button>
+          </div>
+        </div>
+
+        <div class="row">
+          <label for="income">Income</label>
+          <div class="input"><span id="curSymbol1">$</span><input id="income" type="number" min="0" step="1" value="3500" /></div>
+        </div>
+
+        <div class="section-title" style="margin-top:6px;">
+          <span>Categories</span>
+          <span class="small">Label each category as Needs, Wants or Savings (50/30/20 guide).</span>
+        </div>
+
+        <table class="table" id="catTable">
+          <thead>
+            <tr>
+              <th style="width:38%;">Name</th>
+              <th style="width:22%;">Amount</th>
+              <th style="width:20%;">Type</th>
+              <th style="width:20%;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="catBody"></tbody>
+        </table>
+
+        <div class="actions-row">
+          <button id="addRow" class="btn ghost">+ Add Category</button>
+          <button id="reset" class="btn">Reset to Example</button>
+          <button id="exportCsv" class="btn">Export CSV</button>
+          <button id="exportPdf" class="btn" data-premium-only="true">Export PDF</button>
+        </div>
+
+        <p class="small">Rates update hourly from Exchangerate.host. If the API fails, we use last saved or sample rates.</p>
+      </div>
+    </section>
+
+    <!-- RIGHT: Results / Chart / Save -->
+    <section class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div class="section-title"><span>Results</span></div>
+        <div class="userInfo" id="userInfoArea"></div>
+      </div>
+
+      <div class="totals">
+        <div class="stat">
+          <span class="label" id="incomeLabel">Income (Monthly)</span>
+          <span class="value" id="incomeVal">$3,500</span>
+        </div>
+        <div class="stat">
+          <span class="label">Needs total</span>
+          <span class="value" id="needsVal">$0</span>
+        </div>
+        <div class="stat">
+          <span class="label">Wants total</span>
+          <span class="value" id="wantsVal">$0</span>
+        </div>
+        <div class="stat">
+          <span class="label">Savings total</span>
+          <span class="value" id="savingsVal">$0</span>
+        </div>
+        <div class="stat">
+          <span class="label">Total expenses</span>
+          <span class="value" id="totalVal">$0</span>
+        </div>
+        <div class="stat">
+          <span class="label">Remaining</span>
+          <span class="value positive" id="remainVal">$0</span>
+        </div>
+        <div class="stat">
+          <span class="label">Savings as % of income</span>
+          <span class="value" id="savingsPct">—</span>
+        </div>
+        <div class="stat">
+          <span class="label">50/30/20 vs actual</span>
+          <span class="value" id="fiveThreeTwo">—</span>
+        </div>
+      </div>
+
+      <canvas id="allocChart" aria-label="Allocation chart" role="img"></canvas>
+
+      <p class="small" id="advice">Enter numbers to see guidance. Aim for 50% Needs, 30% Wants, 20% Savings.</p>
+      <p class="small" id="fxStatus"></p>
+
+      <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
+        <button id="copySnapshot" class="btn">Copy Snapshot</button>
+        <button id="saveCloud" class="btn primary" data-premium-only="true">Save to Cloud</button>
+        <button id="loadCloud" class="btn">Load Last</button>
+        <a id="stripeBtn" class="btn" href="#" target="_blank">Upgrade to Premium</a>
+      </div>
+    </section>
+  </div>
 </div>
 
+<script>
+/* =========================
+   CONFIGURATION (REPLACE IF NEEDED)
+   - STRIPE_CHECKOUT_URL: replace with your Stripe Checkout URL
+   ========================= */
+const STRIPE_CHECKOUT_URL = "https://buy.stripe.com/test_XXXXXXXXXXXX"; // replace with your Stripe link
+/* ========================= */
 
-<div class="controls">
-<div class="settings-row">
-<div class="field"><label>Currency</label>
-<select id="currency">
-<option value="USD" selected>USD $</option>
-<option value="KES">KES KSh</option>
-<option value="EUR">EUR €</option>
-<option value="GBP">GBP £</option>
-<option value="NGN">NGN ₦</option>
-<option value="ZAR">ZAR R</option>
-<option value="TZS">TZS TSh</option>
-<option value="UGX">UGX USh</option>
-<option value="INR">INR ₹</option>
-<option value="JPY">JPY ¥</option>
-<option value="CAD">CAD $</option>
-<option value="AUD">AUD $</option>
-</select>
-</div>
+/* -------------
+   FIREBASE CONFIG
+   (Inserted using keys you provided earlier)
+   ------------- */
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyDtLg-93_BcASTg4E5oniGlMkGXQOAo94k",
+  authDomain: "my503020.firebaseapp.com",
+  projectId: "my503020",
+  storageBucket: "my503020.firebasestorage.app",
+  messagingSenderId: "612049785066",
+  appId: "1:612049785066:web:ba85e8e2af24a05b894793",
+  measurementId: "G-N31DMC43S9"
+};
+/* Initialize Firebase (compat) */
+try {
+  firebase.initializeApp(FIREBASE_CONFIG);
+  // firebase.analytics(); // optional
+} catch(e){
+  console.warn("Firebase init warning:", e);
+}
 
+/* =============
+   App code (UI, FX, Chart, Cloud, Auth, Premium)
+   ============= */
+(async function(){
+  // Local storage keys
+  const LS_FX = "bp_fx_rates_v1";
+  const LS_FX_TIME = "bp_fx_time_v1";
+  const LS_LAST = "bp_last_budget_v1";
 
-<div class="field"><label>Period</label>
-<select id="period"><option value="monthly" selected>Monthly</option><option value="annual">Annual</option></select>
-</div>
+  // Currency symbols
+  const CUR = {
+    USD:"$", EUR:"€", GBP:"£", JPY:"¥", CAD:"$", AUD:"$", INR:"₹", NGN:"₦", ZAR:"R",
+    KES:"KSh", TZS:"TSh", UGX:"USh"
+  };
 
+  // Fallback FX
+  let FX = {
+    USD: 1,
+    EUR: 0.93,
+    GBP: 0.81,
+    JPY: 153,
+    CAD: 1.38,
+    AUD: 1.52,
+    INR: 84,
+    NGN: 1600,
+    ZAR: 18.5,
+    KES: 129,
+    TZS: 2590,
+    UGX: 3800
+  };
+  try {
+    const saved = JSON.parse(localStorage.getItem(LS_FX) || "null");
+    if (saved && typeof saved === "object") FX = { ...FX, ...saved };
+  } catch {}
 
-<div class="field"><label>Calc Mode</label>
-<select id="calcMode"><option value="auto" selected>Auto</option><option value="manual">Manual</option></select>
-</div>
+  const $ = (id) => document.getElementById(id);
+  const els = {
+    currency: $("currency"),
+    period: $("period"),
+    calcMode: $("calcMode"),
+    share: $("copySnapshot"),
+    income: $("income"),
+    curSymbol1: $("curSymbol1"),
+    catBody: $("catBody"),
+    addRow: $("addRow"),
+    reset: $("reset"),
+    incomeLabel: $("incomeLabel"),
+    incomeVal: $("incomeVal"),
+    needsVal: $("needsVal"),
+    wantsVal: $("wantsVal"),
+    savingsVal: $("savingsVal"),
+    totalVal: $("totalVal"),
+    remainVal: $("remainVal"),
+    savingsPct: $("savingsPct"),
+    fiveThreeTwo: $("fiveThreeTwo"),
+    advice: $("advice"),
+    periodPill: $("periodPill"),
+    fxStatus: $("fxStatus"),
+    exportCsv: $("exportCsv"),
+    exportPdf: $("exportPdf"),
+    copySnapshot: $("copySnapshot"),
+    saveCloud: $("saveCloud"),
+    loadCloud: $("loadCloud"),
+    authBtn: $("authBtn"),
+    userInfoArea: $("userInfoArea"),
+    stripeBtn: $("stripeBtn")
+  };
 
+  // Stripe link
+  els.stripeBtn.href = STRIPE_CHECKOUT_URL;
 
-<div class="field auth"><button id="authBtn" class="btn ghost">Sign in (Google)</button></div>
-</div>
+  const TYPES = ["Needs","Wants","Savings"];
 
+  // App state
+  let state = {
+    currency: "USD",
+    period: "monthly",
+    calcMode: "auto",
+    incomeUSD: 3500,
+    rows: [],
+    user: null,
+    isPremium: false
+  };
 
+  // Firebase handles (if available)
+  let firebaseEnabled = false, auth=null, db=null;
+  try {
+    if (window.firebase && firebase.apps && firebase.apps.length) {
+      firebaseEnabled = true;
+      auth = firebase.auth();
+      db = firebase.firestore();
+    }
+  } catch(e){ console.warn("Firebase not enabled:", e); firebaseEnabled = false; }
+
+  // Auth UI + handlers
+  async function updateUserUI(user){
+    state.user = user;
+    state.isPremium = false;
+    if (user){
+      els.userInfoArea.innerHTML = `<span title="${user.email}">${user.displayName || user.email}</span> <button id="signOutBtn" class="btn ghost">Sign out</button>`;
+      document.getElementById("signOutBtn").addEventListener("click", async ()=>{
+        await auth.signOut();
+      });
+      // check premium status in Firestore: collection 'premium' doc = uid
+      try {
+        const snap = await db.collection("premium").doc(user.uid).get();
+        if (snap.exists && snap.data() && snap.data().active) {
+          state.isPremium = true;
+        } else {
+          state.isPremium = false;
+        }
+      } catch(e){ console.warn("premium check error", e); state.isPremium = false; }
+    } else {
+      els.userInfoArea.innerHTML = '';
+    }
+    applyPremiumLock();
+  }
+
+  function applyPremiumLock(){
+    // Hide/disable premium-only buttons when not premium
+    document.querySelectorAll("[data-premium-only]").forEach(el=>{
+      if (state.isPremium) {
+        el.classList.remove("locked");
+      } else {
+        el.classList.add("locked");
+      }
+    });
+    // Stripe CTA visible when not premium
+    els.stripeBtn.style.display = state.isPremium ? "none" : "inline-block";
+  }
+
+  if (firebaseEnabled) {
+    auth.onAuthStateChanged(user => updateUserUI(user));
+    els.authBtn.addEventListener("click", async ()=>{
+      if (!state.user) {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        try { await auth.signInWithPopup(provider); } catch(e){ alert("Sign-in failed: "+e.message); }
+      } else {
+        await auth.signOut();
+      }
+    });
+  } else {
+    els.authBtn.addEventListener("click", ()=> alert("Firebase not configured. Add config to enable sign-in."));
+  }
+
+  // FX update
+  async function updateFX() {
+    const url = "https://api.exchangerate.host/latest?base=USD";
+    let ok = false;
+    try {
+      const response = await fetch(url, { cache: "no-store" });
+      const data = await response.json();
+      if (data && data.rates) {
+        const mapped = {
+          USD: 1,
+          EUR: data.rates.EUR ?? FX.EUR,
+          GBP: data.rates.GBP ?? FX.GBP,
+          JPY: data.rates.JPY ?? FX.JPY,
+          CAD: data.rates.CAD ?? FX.CAD,
+          AUD: data.rates.AUD ?? FX.AUD,
+          INR: data.rates.INR ?? FX.INR,
+          NGN: data.rates.NGN ?? FX.NGN,
+          ZAR: data.rates.ZAR ?? FX.ZAR,
+          KES: data.rates.KES ?? FX.KES,
+          TZS: data.rates.TZS ?? FX.TZS,
+          UGX: data.rates.UGX ?? FX.UGX
+        };
+        FX = mapped;
+        ok = true;
+        localStorage.setItem(LS_FX, JSON.stringify(FX));
+        localStorage.setItem(LS_FX_TIME, String(Date.now()));
+      }
+    } catch (e) {
+      console.warn("FX fetch failed; using fallback/sample rates.", e);
+    }
+    const last = Number(localStorage.getItem(LS_FX_TIME) || 0);
+    const agoMin = last ? Math.round((Date.now() - last) / 60000) : null;
+    els.fxStatus.textContent = ok
+      ? `Live rates updated from Exchangerate.host.`
+      : last
+        ? `Using cached rates from ${agoMin} min ago.`
+        : `Using sample fallback rates (live update unavailable).`;
+    syncCurrencyUI();
+    triggerCompute();
+  }
+
+  setInterval(updateFX, 60*60*1000);
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") updateFX(); });
+
+  // Currency conversions
+  function toUSD(amountDisplay) {
+    const rate = FX[state.currency] || 1;
+    if (!isFinite(amountDisplay)) return 0;
+    return amountDisplay / rate;
+  }
+  function fromUSD(amountUSD) {
+    const rate = FX[state.currency] || 1;
+    return amountUSD * rate;
+  }
+  function fmtAmount(n){
+    try {
+      return n.toLocaleString(undefined, {
+        style: "currency",
+        currency: state.currency,
+        maximumFractionDigits: 0,
+        minimumFractionDigits: 0
+      });
+    } catch {
+      const sym = CUR[state.currency] || "";
+      return `${sym}${Math.round(n).toLocaleString()}`;
+    }
+  }
+
+  // Categories UI
+  function addRow(data){
+    const id = (crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now() + Math.random());
+    const tr = document.createElement("tr");
+    tr.dataset.id = id;
+
+    // Name
+    const nameTd = document.createElement("td");
+    const nameWrap = document.createElement("div");
+    nameWrap.className = "input";
+    const nameField = document.createElement("input");
+    nameField.type = "text";
+    nameField.placeholder = "Category (e.g., Rent)";
+    nameWrap.appendChild(nameField);
+    nameTd.appendChild(nameWrap);
+
+    // Amount
+    const amountTd = document.createElement("td");
+    const amountWrap = document.createElement("div");
+    amountWrap.className = "input";
+    const cur = document.createElement("span");
+    cur.textContent = CUR[state.currency] || "$";
+    amountWrap.appendChild(cur);
+    const amountField = document.createElement("input");
+    amountField.type = "number"; amountField.min = "0"; amountField.step = "1";
+    amountWrap.appendChild(amountField);
+    amountTd.appendChild(amountWrap);
+
+    // Type
+    const typeTd = document.createElement("td");
+    const typeSel = document.createElement("select");
+    TYPES.forEach(t => {
+      const opt = document.createElement("option");
+      opt.value = t; opt.textContent = t;
+      typeSel.appendChild(opt);
+    });
+    typeTd.appendChild(typeSel);
+
+    // Actions
+    const actionsTd = document.createElement("td");
+    const act = document.createElement("div");
+    act.className = "row-actions";
+    const delBtn = document.createElement("button");
+    delBtn.className = "btn";
+    delBtn.style.padding = "6px 10px";
+    delBtn.textContent = "Delete";
+    delBtn.addEventListener("click", () => {
+      tr.remove();
+      state.rows = state.rows.filter(r => r.id !== id);
+      triggerCompute();
+      scheduleLocalSave();
+    });
+    act.appendChild(delBtn);
+    actionsTd.appendChild(act);
+
+    tr.appendChild(nameTd);
+    tr.appendChild(amountTd);
+    tr.appendChild(typeTd);
+    tr.appendChild(actionsTd);
+    els.catBody.appendChild(tr);
+
+    // Fill initial values
+    if (data){
+      nameField.value = data.name || "";
+      amountField.value = Math.round(fromUSD(data.amountUSD || 0));
+      typeSel.value = data.type || "Needs";
+    }
+
+    const row = {
+      id,
+      get name(){ return nameField.value.trim(); },
+      set name(v){ nameField.value = v; },
+      get amountUSD(){ return toUSD(+amountField.value || 0); },
+      set amountUSD(v){ amountField.value = Math.round(fromUSD(v)); },
+      get type(){ return typeSel.value; },
+      set type(v){ typeSel.value = v; }
+    };
+    state.rows.push(row);
+
+    const onChange = () => { triggerCompute(); scheduleLocalSave(); };
+    nameField.addEventListener("input", onChange);
+    amountField.addEventListener("input", onChange);
+    typeSel.addEventListener("change", onChange);
+
+    return row;
+  }
+
+  function presetExample(){
+    els.catBody.innerHTML = "";
+    state.rows = [];
+    addRow({ name: "Housing (Rent)", amountUSD: 1200, type: "Needs" });
+    addRow({ name: "Transportation", amountUSD: 225, type: "Needs" });
+    addRow({ name: "Groceries & Household", amountUSD: 400, type: "Needs" });
+    addRow({ name: "Savings Goal", amountUSD: 500, type: "Savings" });
+    addRow({ name: "Entertainment & Leisure", amountUSD: 200, type: "Wants" });
+  }
+
+  // Compute & UI
+  function getPeriodFactor(){ return state.period === "annual" ? 12 : 1; }
+
+  function compute(){
+    const pf = getPeriodFactor();
+    const incomePeriodUSD = state.incomeUSD * pf;
+
+    let needsUSD = 0, wantsUSD = 0, savingsUSD = 0, totalUSD = 0;
+    state.rows.forEach(r => {
+      const amt = r.amountUSD * pf;
+      totalUSD += amt;
+      if (r.type === "Savings") savingsUSD += amt;
+      else if (r.type === "Wants") wantsUSD += amt;
+      else needsUSD += amt;
+    });
+
+    const remainingUSD = incomePeriodUSD - totalUSD;
+
+    // Display
+    els.incomeLabel.textContent = `Income (${state.period === "monthly" ? "Monthly" : "Annual"})`;
+    els.incomeVal.textContent = fmtAmount(fromUSD(incomePeriodUSD));
+    els.needsVal.textContent = fmtAmount(fromUSD(needsUSD));
+    els.wantsVal.textContent = fmtAmount(fromUSD(wantsUSD));
+    els.savingsVal.textContent = fmtAmount(fromUSD(savingsUSD));
+    els.totalVal.textContent = fmtAmount(fromUSD(totalUSD));
+    els.remainVal.textContent = fmtAmount(fromUSD(remainingUSD));
+
+    // Color coding
+    els.remainVal.classList.remove("positive","warn","negative");
+    if (remainingUSD > 0) els.remainVal.classList.add("positive");
+    else if (remainingUSD === 0) els.remainVal.classList.add("warn");
+    else els.remainVal.classList.add("negative");
+
+    // Savings %
+    const savingsPct = incomePeriodUSD > 0 ? (100 * savingsUSD / incomePeriodUSD) : 0;
+    els.savingsPct.textContent = incomePeriodUSD > 0 ? savingsPct.toFixed(2) + "%" : "—";
+
+    // 50/30/20 comparison
+    const tgtNeeds = 0.50 * incomePeriodUSD;
+    const tgtWants = 0.30 * incomePeriodUSD;
+    const tgtSavings = 0.20 * incomePeriodUSD;
+
+    const needsDiff = needsUSD - tgtNeeds;
+    const wantsDiff = wantsUSD - tgtWants;
+    const savingsDiff = savingsUSD - tgtSavings;
+
+    const sign = (n)=> n>0?"+":"";
+    els.fiveThreeTwo.textContent =
+      `Needs ${sign(needsDiff)}${fmtAmount(fromUSD(needsDiff))}, ` +
+      `Wants ${sign(wantsDiff)}${fmtAmount(fromUSD(wantsDiff))}, ` +
+      `Savings ${sign(savingsDiff)}${fmtAmount(fromUSD(savingsDiff))}`;
+
+    // Advice
+    let msg = "";
+    if (state.incomeUSD <= 0) {
+      msg = "Enter a positive income to begin.";
+    } else if (remainingUSD < 0) {
+      msg = "Warning: Over budget. Reduce expenses or increase income.";
+    } else if (savingsPct < 10) {
+      msg = "Consider increasing savings toward 10–20% if possible.";
+    } else if (savingsPct >= 20) {
+      msg = "Excellent: Savings are at or above 20% of income.";
+    } else {
+      msg = "Solid: You're saving; consider nudging to 20% for faster progress.";
+    }
+    const needsShare = incomePeriodUSD > 0 ? (100*needsUSD/incomePeriodUSD) : 0;
+    const wantsShare = incomePeriodUSD > 0 ? (100*wantsUSD/incomePeriodUSD) : 0;
+    const tips = [];
+    if (needsShare > 55) tips.push("Needs >55% — consider reducing essentials or refinancing.");
+    if (wantsShare > 35) tips.push("Wants >35% — trim discretionary spend.");
+    if (tips.length) msg += " " + tips.join(" ");
+    els.advice.textContent = msg;
+
+    // Chart update
+    updateChart(needsUSD, wantsUSD, savingsUSD);
+  }
+
+  // Chart
+  let allocChart = null;
+  function initChart(){
+    const ctx = document.getElementById("allocChart").getContext("2d");
+    allocChart = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Needs','Wants','Savings'],
+        datasets: [{ data: [0,0,0], backgroundColor: ['#2563eb','#22c55e','#f59e0b'] }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { position: 'bottom', labels: { color: '#cbd5e1' } } }
+      }
+    });
+  }
+  function updateChart(needs, wants, savings){
+    if (!allocChart) return;
+    allocChart.data.datasets[0].data = [needs, wants, savings].map(v=> Math.round(fromUSD(v)));
+    allocChart.update();
+  }
+
+  // UI Sync and bindings
+  function syncCurrencyUI(){
+    els.curSymbol1.textContent = CUR[state.currency] || "$";
+    [...els.catBody.querySelectorAll("td:nth-child(2) .input span:first-child")].forEach(span => span.textContent = CUR[state.currency] || "$");
+  }
+
+  // Bind settings
+  els.currency.addEventListener("change", () => {
+    state.currency = els.currency.value;
+    syncCurrencyUI();
+    compute();
+  });
+  els.period.addEventListener("change", () => {
+    state.period = els.period.value;
+    els.periodPill.textContent = state.period === "monthly" ? "Monthly" : "Annual";
+    compute();
+  });
+  els.calcMode.addEventListener("change", () => {
+    state.calcMode = els.calcMode.value;
+  });
+
+  // Income binding
+  els.income.addEventListener("input", () => {
+    const displayVal = +els.income.value || 0;
+    const usdMonthly = toUSD(displayVal) / getPeriodFactor();
+    state.incomeUSD = usdMonthly;
+    if (state.calcMode === "auto") compute();
+    scheduleLocalSave();
+  });
+
+  function triggerCompute(){ if (state.calcMode === "auto") compute(); }
+
+  // Add/reset
+  els.addRow.addEventListener("click", ()=> addRow({ name: "", amountUSD: 0, type: "Needs" }));
+  els.reset.addEventListener("click", ()=> {
+    els.currency.value = "USD"; state.currency="USD";
+    els.period.value = "monthly"; state.period="monthly";
+    els.calcMode.value = "auto"; state.calcMode="auto";
+    els.income.value = 3500; state.incomeUSD = 3500;
+    presetExample(); syncCurrencyUI(); compute(); scheduleLocalSave();
+  });
+
+  // Copy snapshot
+  els.copySnapshot.addEventListener("click", async () => {
+    const pf = getPeriodFactor();
+    const lines = [
+      "Budget Snapshot",
+      "----------------",
+      `Currency: ${state.currency}`,
+      `Period: ${state.period}`,
+      `Income: ${fmtAmount(fromUSD(state.incomeUSD*pf))}`,
+      "",
+      "Categories:"
+    ];
+    state.rows.forEach(r => {
+      const amt = fromUSD(r.amountUSD * pf);
+      lines.push(`- ${r.name || "Untitled"} (${r.type}): ${fmtAmount(amt)}`);
+    });
+    const totalUSD = state.rows.reduce((s,r)=> s + r.amountUSD, 0) * pf;
+    const remainUSD = state.incomeUSD * pf - totalUSD;
+    lines.push("");
+    lines.push(`Total expenses: ${fmtAmount(fromUSD(totalUSD))}`);
+    lines.push(`Remaining: ${fmtAmount(fromUSD(remainUSD))}`);
+    try {
+      await navigator.clipboard.writeText(lines.join("\n"));
+      const original = els.copySnapshot.textContent;
+      els.copySnapshot.textContent = "Copied!";
+      setTimeout(()=> els.copySnapshot.textContent = original, 1400);
+    } catch {
+      alert(lines.join("\n"));
+    }
+  });
+
+  // Export CSV
+  els.exportCsv.addEventListener("click", ()=> {
+    const pf = getPeriodFactor();
+    const rows = [["Name","Type","Amount ("+state.currency+")"]];
+    state.rows.forEach(r => rows.push([r.name || "Untitled", r.type, Math.round(fromUSD(r.amountUSD * pf))]));
+    const totalUSD = state.rows.reduce((s,r)=> s + r.amountUSD, 0) * pf;
+    rows.push([]); rows.push(["Total Expenses", "", Math.round(fromUSD(totalUSD))]);
+    const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a"); a.href = url; a.download = "budget.csv"; a.click(); URL.revokeObjectURL(url);
+  });
+
+  // Export PDF (premium)
+  els.exportPdf.addEventListener("click", ()=> {
+    if (!state.isPremium) return alert("Export PDF is for Premium users. Click Upgrade to subscribe.");
+    const pf = getPeriodFactor();
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit:'pt', format:'a4' });
+    doc.setFontSize(14);
+    doc.text("Budget Snapshot", 40, 50);
+    doc.setFontSize(11);
+    doc.text(`Currency: ${state.currency} | Period: ${state.period}`, 40, 70);
+    doc.text(`Income: ${fmtAmount(fromUSD(state.incomeUSD * pf))}`, 40, 90);
+    let y = 120;
+    state.rows.forEach(r=>{
+      doc.text(`${r.name || "Untitled"} (${r.type})`, 40, y);
+      doc.text(`${fmtAmount(fromUSD(r.amountUSD * pf))}`, 420, y);
+      y += 18;
+      if (y > 720) { doc.addPage(); y = 40; }
+    });
+    const totalUSD = state.rows.reduce((s,r)=> s + r.amountUSD, 0) * pf;
+    doc.text("Total expenses:", 40, y+20); doc.text(fmtAmount(fromUSD(totalUSD)), 420, y+20);
+    doc.save("budget.pdf");
+  });
+
+  // Cloud save/load (premium for save)
+  async function saveToCloud(){
+    if (!firebaseEnabled || !auth) { alert("Cloud save requires Firebase (enable FIREBASE_CONFIG)."); return; }
+    if (!auth.currentUser) { alert("Sign in first to save to cloud."); return; }
+    if (!state.isPremium) return alert("Cloud save is a premium feature. Upgrade to save in the cloud.");
+    try {
+      const pf = getPeriodFactor();
+      const payload = {
+        uid: auth.currentUser.uid,
+        timestamp: Date.now(),
+        currency: state.currency,
+        period: state.period,
+        incomeUSD: state.incomeUSD,
+        rows: state.rows.map(r => ({ name: r.name, amountUSD: r.amountUSD, type: r.type })),
+      };
+      await db.collection("budgets").doc(auth.currentUser.uid).set(payload);
+      alert("Saved to cloud (last budget).");
+    } catch(e){ alert("Save failed: "+ e.message); }
+  }
+  async function loadFromCloud(){
+    if (!firebaseEnabled || !auth) { alert("Cloud load requires Firebase (enable FIREBASE_CONFIG)."); return; }
+    if (!auth.currentUser) { alert("Sign in first to load."); return; }
+    try {
+      const docSnap = await db.collection("budgets").doc(auth.currentUser.uid).get();
+      if (!docSnap.exists) return alert("No saved budget found.");
+      const data = docSnap.data();
+      if (!data) return alert("Saved budget empty.");
+      // apply
+      state.currency = data.currency || "USD";
+      state.period = data.period || "monthly";
+      state.incomeUSD = data.incomeUSD || 0;
+      els.currency.value = state.currency; els.period.value = state.period; els.income.value = Math.round(fromUSD(state.incomeUSD/getPeriodFactor()));
+      els.periodPill.textContent = state.period === "monthly" ? "Monthly" : "Annual";
+      els.calcMode.value = state.calcMode;
+      els.catBody.innerHTML = ""; state.rows = [];
+      (data.rows||[]).forEach(r => addRow({ name: r.name, amountUSD: r.amountUSD, type: r.type }));
+      syncCurrencyUI(); compute();
+      alert("Loaded last saved budget.");
+    } catch(e){ alert("Load failed: "+e.message); }
+  }
+
+  if (firebaseEnabled){
+    els.saveCloud.addEventListener("click", saveToCloud);
+    els.loadCloud.addEventListener("click", loadFromCloud);
+  } else {
+    els.saveCloud.addEventListener("click", ()=> alert("Enable Firebase config to use cloud save/load."));
+    els.loadCloud.addEventListener("click", ()=> alert("Enable Firebase config to use cloud save/load."));
+  }
+
+  // Local storage save/load
+  function saveLocalLast(){
+    try {
+      const pf = getPeriodFactor();
+      const obj = { currency: state.currency, period: state.period, incomeUSD: state.incomeUSD, rows: state.rows.map(r => ({ name:r.name, amountUSD:r.amountUSD, type:r.type })), ts: Date.now() };
+      localStorage.setItem(LS_LAST, JSON.stringify(obj));
+    } catch(e){}
+  }
+  function loadLocalLast(){
+    try {
+      const s = JSON.parse(localStorage.getItem(LS_LAST) || "null");
+      if (!s) return alert("No local saved budget found.");
+      state.currency = s.currency || "USD"; state.period = s.period || "monthly"; state.incomeUSD = s.incomeUSD || 0;
+      els.currency.value = state.currency; els.period.value = state.period; els.income.value = Math.round(fromUSD(state.incomeUSD/getPeriodFactor()));
+      els.periodPill.textContent = state.period === "monthly" ? "Monthly" : "Annual";
+      els.catBody.innerHTML = ""; state.rows = [];
+      (s.rows||[]).forEach(r => addRow({ name:r.name, amountUSD:r.amountUSD, type:r.type }));
+      syncCurrencyUI(); compute();
+      alert("Loaded last local budget.");
+    } catch(e){ alert("Load failed."); }
+  }
+
+  // Debounced local save
+  let saveTimer = null;
+  function scheduleLocalSave(){
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(()=> saveLocalLast(), 800);
+  }
+
+  // Service worker registration (PWA)
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/service-worker.js')
+      .then(() => console.log('Service worker registered'))
+      .catch((err) => console.warn('SW registration failed:', err));
+  }
+
+  // Stripe upgrade button action
+  els.stripeBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    // if configured to open checkout link directly:
+    if (!state.user) {
+      return alert("Sign in to upgrade — we will link upgrade to your account after payment.");
+    }
+    // client_reference_id = user.uid (Stripe Checkout should be configured to include it in session)
+    // Redirect to your pre-built Stripe Checkout page
+    window.location.href = STRIPE_CHECKOUT_URL;
+  });
+
+  // Load local if user clicks load
+  $("loadCloud").addEventListener("click", ()=> {
+    if (firebaseEnabled && auth && auth.currentUser) {
+      // prefer cloud if logged in
+      loadFromCloud();
+    } else {
+      loadLocalLast();
+    }
+  });
+
+  // Observe changes and auto-save locally
+  const observer = new MutationObserver(()=> { scheduleLocalSave(); triggerCompute(); });
+  observer.observe(els.catBody, { childList:true, subtree:true });
+
+  window.addEventListener("beforeunload", ()=> saveLocalLast());
+
+  // Init
+  presetExample();
+  initChart();
+  syncCurrencyUI();
+  updateFX();
+  compute();
+
+  // Debug helpers
+  window._myBP = { state, FX, addRow, compute };
+
+})();
+</script>
+</body>
 </html>
