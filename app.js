@@ -1,107 +1,121 @@
-// Import Firebase auth
-import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-auth.js";
-import { app } from './firebase-config.js'; // make sure firebase-config.js exports your app
+// ===== Firebase Authentication =====
+import { getAuth, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { app } from "./firebase-config.js"; // your Firebase config file
 
-// DOM Elements
-const incomeInput = document.getElementById('income');
-const calculateBtn = document.getElementById('calculate');
-const needsEl = document.getElementById('needs');
-const wantsEl = document.getElementById('wants');
-const savingsEl = document.getElementById('savings');
-const logoutBtn = document.getElementById('logout');
-const toggleDarkBtn = document.getElementById('toggle-dark');
-const toggleChartBtn = document.getElementById('toggleChart');
-const chartCanvas = document.getElementById('budgetChart');
-
-let currentChartType = 'pie';
-let chartInstance = null;
-
-// Firebase Auth
 const auth = getAuth(app);
 
-onAuthStateChanged(auth, (user) => {
-  if (!user) {
-    console.log("User signed out"); // just log, no redirect
-  }
-});
+// ===== DOM Elements =====
+const incomeInput = document.getElementById("income");
+const calculateBtn = document.getElementById("calculateBtn");
+const resetBtn = document.getElementById("resetBtn");
+const budgetList = document.getElementById("budgetList");
+const chartCanvas = document.getElementById("budgetChart");
+const toggleChartBtn = document.getElementById("toggleChartBtn");
+const darkModeToggle = document.getElementById("darkModeToggle");
+const logoutBtn = document.getElementById("logoutBtn");
 
-// Logout functionality (just sign out, no redirect)
-logoutBtn.addEventListener('click', () => {
-  signOut(auth).then(() => {
-    alert("You have signed out successfully");
-  }).catch((error) => {
-    console.error("Error logging out:", error);
-  });
-});
+// ===== Initialize Chart =====
+let currentChartType = "pie";
+let budgetChart;
 
-// Dark Mode: Load saved preference
-if (localStorage.getItem('darkMode') === 'enabled') {
-  document.body.classList.add('dark');
+function renderChart(labels, data) {
+    if (budgetChart) budgetChart.destroy();
+
+    const ctx = chartCanvas.getContext("2d");
+    budgetChart = new Chart(ctx, {
+        type: currentChartType,
+        data: {
+            labels: labels,
+            datasets: [{
+                label: "Budget Allocation",
+                data: data,
+                backgroundColor: ["#4CAF50", "#FF9800", "#2196F3"],
+            }],
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: "bottom" }
+            }
+        }
+    });
 }
 
-toggleDarkBtn.addEventListener('click', () => {
-  if (document.body.classList.contains('dark')) {
-    document.body.classList.remove('dark');
-    localStorage.setItem('darkMode', 'disabled');
-  } else {
-    document.body.classList.add('dark');
-    localStorage.setItem('darkMode', 'enabled');
-  }
-});
+// ===== Dark Mode Persistence =====
+function loadDarkMode() {
+    const dark = localStorage.getItem("darkMode");
+    if (dark === "enabled") document.body.classList.add("dark");
+}
 
-// Calculate 50/30/20 budget
-calculateBtn.addEventListener('click', () => {
-  const income = parseFloat(incomeInput.value);
-  if (isNaN(income) || income <= 0) {
-    alert("Please enter a valid income amount");
-    return;
-  }
-
-  const needs = (income * 0.5).toFixed(2);
-  const wants = (income * 0.3).toFixed(2);
-  const savings = (income * 0.2).toFixed(2);
-
-  needsEl.textContent = needs;
-  wantsEl.textContent = wants;
-  savingsEl.textContent = savings;
-
-  renderChart(needs, wants, savings);
-});
-
-// Render Chart
-function renderChart(needs, wants, savings) {
-  const data = {
-    labels: ['Needs', 'Wants', 'Savings'],
-    datasets: [{
-      label: 'Budget Allocation',
-      data: [needs, wants, savings],
-      backgroundColor: ['#4caf50', '#ff9800', '#2196f3']
-    }]
-  };
-
-  if (chartInstance) {
-    chartInstance.destroy();
-  }
-
-  chartInstance = new Chart(chartCanvas, {
-    type: currentChartType,
-    data: data,
-    options: {
-      responsive: true,
-      plugins: {
-        legend: { position: 'bottom' }
-      }
+function toggleDarkMode() {
+    document.body.classList.toggle("dark");
+    if (document.body.classList.contains("dark")) {
+        localStorage.setItem("darkMode", "enabled");
+    } else {
+        localStorage.setItem("darkMode", "disabled");
     }
-  });
 }
 
-// Toggle between Pie and Bar chart
-toggleChartBtn.addEventListener('click', () => {
-  currentChartType = currentChartType === 'pie' ? 'bar' : 'pie';
+// ===== Logout =====
+function logoutUser() {
+    signOut(auth)
+        .then(() => {
+            alert("Logged out successfully!");
+            // Stay on app.html (no redirect)
+        })
+        .catch(err => console.error(err));
+}
 
-  const needs = parseFloat(needsEl.textContent);
-  const wants = parseFloat(wantsEl.textContent);
-  const savings = parseFloat(savingsEl.textContent);
+// ===== Chart Toggle =====
+function toggleChart() {
+    currentChartType = currentChartType === "pie" ? "bar" : "pie";
+    calculateBudget(); // re-render chart
+}
 
-  renderChart(needs, wants, savings);
+// ===== 50/30/20 Budget Calculation =====
+function calculateBudget() {
+    const income = parseFloat(incomeInput.value);
+    if (isNaN(income) || income <= 0) {
+        alert("Please enter a valid income!");
+        return;
+    }
+
+    const needs = (income * 50) / 100;
+    const wants = (income * 30) / 100;
+    const savings = (income * 20) / 100;
+
+    // Update list
+    budgetList.innerHTML = `
+        <li>Needs (50%): $${needs.toFixed(2)}</li>
+        <li>Wants (30%): $${wants.toFixed(2)}</li>
+        <li>Savings (20%): $${savings.toFixed(2)}</li>
+    `;
+
+    // Update chart
+    renderChart(["Needs", "Wants", "Savings"], [needs, wants, savings]);
+}
+
+// ===== Reset =====
+function resetBudget() {
+    incomeInput.value = "";
+    budgetList.innerHTML = "";
+    if (budgetChart) budgetChart.destroy();
+}
+
+// ===== Event Listeners =====
+calculateBtn.addEventListener("click", calculateBudget);
+resetBtn.addEventListener("click", resetBudget);
+toggleChartBtn.addEventListener("click", toggleChart);
+darkModeToggle.addEventListener("click", toggleDarkMode);
+logoutBtn.addEventListener("click", logoutUser);
+
+// ===== Firebase Auth State =====
+onAuthStateChanged(auth, user => {
+    if (!user) {
+        alert("Please login to use the budget app!");
+        // Optionally: redirect to index.html
+    }
 });
+
+// ===== Initialize =====
+loadDarkMode();
