@@ -1,33 +1,20 @@
-/* Base / Light Mode */
-:root {
-    --bg-color: #f4f4f9;
-    --text-color: #333;
-    --header-bg: #6200ee;
-    --header-text: #fff;
-    --button-bg: #6200ee;
-    --button-text: #fff;
-    --button-hover-bg: #3700b3;
-    --input-bg: #fff;
-    --input-border: #ccc;
-    --budget-item-bg: #fff;
-    --budget-item-border: #ddd;
-}
-
+/* ---------------------- General Styles ---------------------- */
 body {
-    background-color: var(--bg-color);
-    color: var(--text-color);
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
+    background-color: #f5f5f5;
+    color: #333;
+    transition: background-color 0.3s, color 0.3s;
 }
 
 header {
-    background-color: var(--header-bg);
-    color: var(--header-text);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem;
+    padding: 1rem 2rem;
+    background-color: #4CAF50;
+    color: white;
 }
 
 header h1 {
@@ -35,116 +22,119 @@ header h1 {
     font-size: 1.5rem;
 }
 
-.header-buttons button {
-    margin-left: 0.5rem;
+header button {
+    margin-left: 10px;
     padding: 0.5rem 1rem;
-    background-color: var(--button-bg);
-    color: var(--button-text);
-    border: none;
+    font-size: 0.9rem;
     cursor: pointer;
+    border: none;
     border-radius: 5px;
+    transition: background-color 0.2s;
 }
 
-.header-buttons button:hover {
-    background-color: var(--button-hover-bg);
+header button:hover {
+    background-color: #45a049;
 }
 
 main {
-    padding: 1rem;
-    max-width: 600px;
-    margin: auto;
+    padding: 2rem;
 }
 
-.budget-input {
+/* ---------------------- Form Styles ---------------------- */
+form {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    max-width: 400px;
+    margin-bottom: 2rem;
+}
+
+form label {
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+}
+
+form input {
+    padding: 0.5rem;
+    font-size: 1rem;
     margin-bottom: 1rem;
-}
-
-.budget-input input {
-    padding: 0.5rem;
-    border: 1px solid var(--input-border);
     border-radius: 5px;
+    border: 1px solid #ccc;
 }
 
-.budget-input button {
-    padding: 0.5rem;
+form button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 0.7rem;
     border: none;
     border-radius: 5px;
-    background-color: var(--button-bg);
-    color: var(--button-text);
     cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.2s;
 }
 
-.budget-input button:hover {
-    background-color: var(--button-hover-bg);
+form button:hover {
+    background-color: #45a049;
 }
 
-.budget-output {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-}
-
+/* ---------------------- Budget List Styles ---------------------- */
 #budgetList {
     list-style: none;
     padding: 0;
-    width: 100%;
+    max-width: 400px;
+    margin-bottom: 2rem;
 }
 
 #budgetList li {
-    background-color: var(--budget-item-bg);
-    border: 1px solid var(--budget-item-border);
-    padding: 0.5rem;
+    background-color: #e0e0e0;
     margin-bottom: 0.5rem;
+    padding: 0.5rem 1rem;
     border-radius: 5px;
-    display: flex;
-    justify-content: space-between;
 }
 
-#budgetChart {
+/* ---------------------- Chart ---------------------- */
+canvas {
     max-width: 100%;
-    height: auto;
+    margin-bottom: 2rem;
 }
 
+/* ---------------------- Footer ---------------------- */
 footer {
     text-align: center;
     padding: 1rem;
-    font-size: 0.9rem;
-    color: #666;
+    background-color: #333;
+    color: white;
 }
 
-/* Dark Mode */
+/* ---------------------- Dark Mode ---------------------- */
 body.dark-mode {
-    --bg-color: #1e1e2f;
-    --text-color: #f0f0f0;
-    --header-bg: #2c2c44;
-    --header-text: #fff;
-    --button-bg: #4444aa;
-    --button-text: #fff;
-    --button-hover-bg: #222288;
-    --input-bg: #2c2c44;
-    --input-border: #555;
-    --budget-item-bg: #2c2c44;
-    --budget-item-border: #555;
+    background-color: #1e1e1e;
+    color: #f5f5f5;
 }
 
-/* Responsive */
-@media (max-width: 600px) {
-    header {
-        flex-direction: column;
-        gap: 0.5rem;
-    }
+body.dark-mode header {
+    background-color: #111;
+}
 
-    .header-buttons {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-    }
+body.dark-mode header button {
+    background-color: #333;
+    color: #f5f5f5;
+}
 
-    .budget-input {
-        gap: 1rem;
-    }
+body.dark-mode header button:hover {
+    background-color: #555;
+}
+
+body.dark-mode form input {
+    background-color: #333;
+    color: #f5f5f5;
+    border: 1px solid #555;
+}
+
+body.dark-mode #budgetList li {
+    background-color: #333;
+}
+
+body.dark-mode footer {
+    background-color: #111;
+    color: #f5f5f5;
 }
