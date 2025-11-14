@@ -1,1 +1,28 @@
 
+---
+
+# ✅ **PART 3 — `manifest.json` (Copy & Paste)**
+
+Create **manifest.json**:
+
+```json
+{
+  "name": "50/30/20 Budgeting App",
+  "short_name": "503020",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#10b981",
+  "icons": [
+    {
+      "src": "assets/logo-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/logo-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
