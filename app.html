@@ -1,39 +1,110 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>50/30/20 Dashboard</title>
-<link rel="stylesheet" href="style.css">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>50/30/20 Budget Calculator</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #1a1a1a;
+      color: #fff;
+    }
+    .container {
+      max-width: 400px;
+      margin: 50px auto;
+      padding: 20px;
+      background-color: #2a2a2a;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 5px;
+      border: none;
+      font-size: 16px;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      font-size: 16px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      background-color: #4caf50;
+      color: white;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    .result {
+      margin-top: 20px;
+      background-color: #3a3a3a;
+      padding: 15px;
+      border-radius: 8px;
+      text-align: center;
+    }
+    .logout-btn {
+      background-color: #f44336;
+      margin-top: 15px;
+    }
+    .logout-btn:hover {
+      background-color: #d32f2f;
+    }
+  </style>
 </head>
-
 <body>
+  <div class="container">
+    <h1>50/30/20 Budget Calculator</h1>
 
-<div class="container">
+    <input type="number" id="income" placeholder="Enter Monthly Income" />
 
-  <h1>50/30/20 Budget Dashboard</h1>
+    <button id="calculate">Calculate Budget</button>
 
-  <button id="logout">Logout</button>
-  <button id="toggle-dark">Toggle Dark Mode</button>
+    <div class="result" id="result">
+      <p>Needs (50%): $<span id="needs">0</span></p>
+      <p>Wants (30%): $<span id="wants">0</span></p>
+      <p>Savings (20%): $<span id="savings">0</span></p>
+    </div>
 
-  <h2>Enter Your Income</h2>
-  <input type="number" id="income" placeholder="Enter income">
-
-  <button id="calculate">Calculate</button>
-
-  <div id="results">
-    <p>Needs (50%): <strong id="needs">0</strong></p>
-    <p>Wants (30%): <strong id="wants">0</strong></p>
-    <p>Savings (20%): <strong id="savings">0</strong></p>
+    <button class="logout-btn" id="logout">Logout</button>
   </div>
 
-  <button id="toggleChart">Toggle Chart</button>
-  <canvas id="budgetChart" width="400" height="400"></canvas>
+  <script type="module">
+    import { logout } from "./app.js";
 
-</div>
+    const incomeInput = document.getElementById("income");
+    const calculateBtn = document.getElementById("calculate");
+    const needsEl = document.getElementById("needs");
+    const wantsEl = document.getElementById("wants");
+    const savingsEl = document.getElementById("savings");
+    const logoutBtn = document.getElementById("logout");
 
-<script type="module" src="app.js"></script>
+    calculateBtn.addEventListener("click", () => {
+      const income = parseFloat(incomeInput.value);
+      if (isNaN(income) || income <= 0) {
+        alert("Please enter a valid income amount");
+        return;
+      }
 
+      needsEl.innerText = (income * 0.5).toFixed(2);
+      wantsEl.innerText = (income * 0.3).toFixed(2);
+      savingsEl.innerText = (income * 0.2).toFixed(2);
+    });
+
+    logoutBtn.addEventListener("click", () => {
+      logout();
+    });
+  </script>
 </body>
 </html>
