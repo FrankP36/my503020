@@ -15,8 +15,8 @@
       transition: background-color 0.3s, color 0.3s;
     }
     .container {
-      max-width: 400px;
-      margin: 50px auto;
+      max-width: 600px;
+      margin: 30px auto;
       padding: 20px;
       background-color: #2a2a2a;
       border-radius: 10px;
@@ -46,24 +46,12 @@
       color: white;
       transition: background-color 0.3s;
     }
-    .btn-calculate {
-      background-color: #4caf50;
-    }
-    .btn-calculate:hover {
-      background-color: #45a049;
-    }
-    .logout-btn {
-      background-color: #f44336;
-    }
-    .logout-btn:hover {
-      background-color: #d32f2f;
-    }
-    .theme-btn {
-      background-color: #2196f3;
-    }
-    .theme-btn:hover {
-      background-color: #1976d2;
-    }
+    .btn-calculate { background-color: #4caf50; }
+    .btn-calculate:hover { background-color: #45a049; }
+    .logout-btn { background-color: #f44336; }
+    .logout-btn:hover { background-color: #d32f2f; }
+    .theme-btn { background-color: #2196f3; }
+    .theme-btn:hover { background-color: #1976d2; }
     .result {
       margin-top: 20px;
       background-color: #3a3a3a;
@@ -72,24 +60,19 @@
       text-align: center;
       transition: background-color 0.3s;
     }
+    canvas { margin-top: 20px; }
     /* Light theme */
     body.light {
       background-color: #f4f4f4;
       color: #1a1a1a;
     }
-    body.light .container {
-      background-color: #fff;
-      box-shadow: 0 0 10px rgba(0,0,0,0.2);
-    }
-    body.light .result {
-      background-color: #e0e0e0;
-    }
+    body.light .container { background-color: #fff; box-shadow: 0 0 10px rgba(0,0,0,0.2); }
+    body.light .result { background-color: #e0e0e0; }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>50/30/20 Budget Calculator</h1>
-
     <input type="number" id="income" placeholder="Enter Monthly Income" />
 
     <div class="result" id="result">
@@ -101,8 +84,16 @@
     <button class="btn-calculate" id="calculate">Calculate</button>
     <button class="theme-btn" id="toggle-theme">Toggle Dark/Light Mode</button>
     <button class="logout-btn" id="logout">Logout</button>
+
+    <!-- Charts -->
+    <canvas id="pieChart"></canvas>
+    <canvas id="barChart"></canvas>
+    <canvas id="lineChart"></canvas>
   </div>
 
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
   <script type="module">
     import { logout } from "./app.js";
 
@@ -113,23 +104,71 @@
     const logoutBtn = document.getElementById("logout");
     const toggleThemeBtn = document.getElementById("toggle-theme");
 
-    // Live calculation
+    let pieChart, barChart, lineChart;
+
     function calculateBudget() {
       const income = parseFloat(incomeInput.value);
       if (isNaN(income) || income <= 0) {
         needsEl.innerText = "0";
         wantsEl.innerText = "0";
         savingsEl.innerText = "0";
+        updateCharts([0,0,0]);
         return;
       }
-      needsEl.innerText = (income * 0.5).toFixed(2);
-      wantsEl.innerText = (income * 0.3).toFixed(2);
-      savingsEl.innerText = (income * 0.2).toFixed(2);
+
+      const needs = income * 0.5;
+      const wants = income * 0.3;
+      const savings = income * 0.2;
+
+      needsEl.innerText = needs.toFixed(2);
+      wantsEl.innerText = wants.toFixed(2);
+      savingsEl.innerText = savings.toFixed(2);
+
+      updateCharts([needs, wants, savings]);
     }
 
-    incomeInput.addEventListener("input", calculateBudget);
+    function updateCharts(data) {
+      const labels = ["Needs (50%)", "Wants (30%)", "Savings (20%)"];
+      const colors = ["#4caf50", "#2196f3", "#f44336"];
 
-    // Button calculation (optional)
+      // Pie Chart
+      if (!pieChart) {
+        pieChart = new Chart(document.getElementById("pieChart"), {
+          type: 'pie',
+          data: { labels, datasets: [{ data, backgroundColor: colors }] },
+        });
+      } else {
+        pieChart.data.datasets[0].data = data;
+        pieChart.update();
+      }
+
+      // Bar Chart
+      if (!barChart) {
+        barChart = new Chart(document.getElementById("barChart"), {
+          type: 'bar',
+          data: { labels, datasets: [{ label: 'Budget Breakdown', data, backgroundColor: colors }] },
+          options: { scales: { y: { beginAtZero: true } } }
+        });
+      } else {
+        barChart.data.datasets[0].data = data;
+        barChart.update();
+      }
+
+      // Line Chart
+      if (!lineChart) {
+        lineChart = new Chart(document.getElementById("lineChart"), {
+          type: 'line',
+          data: { labels, datasets: [{ label: 'Budget Trend', data, borderColor: '#ffc107', backgroundColor: 'rgba(255,193,7,0.2)', tension: 0.4 }] },
+          options: { scales: { y: { beginAtZero: true } } }
+        });
+      } else {
+        lineChart.data.datasets[0].data = data;
+        lineChart.update();
+      }
+    }
+
+    // Live calculation
+    incomeInput.addEventListener("input", calculateBudget);
     document.getElementById("calculate").addEventListener("click", calculateBudget);
 
     // Logout
