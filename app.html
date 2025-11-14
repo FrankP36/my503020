@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>50/30/20 Dashboard</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+
+<div class="container">
+
+  <h1>50/30/20 Budget Dashboard</h1>
+
+  <button id="logout">Logout</button>
+  <button id="toggle-dark">Toggle Dark Mode</button>
+
+  <h2>Enter Your Income</h2>
+  <input type="number" id="income" placeholder="Enter income">
+
+  <button id="calculate">Calculate</button>
+
+  <div id="results">
+    <p>Needs (50%): <strong id="needs">0</strong></p>
+    <p>Wants (30%): <strong id="wants">0</strong></p>
+    <p>Savings (20%): <strong id="savings">0</strong></p>
+  </div>
+
+  <button id="toggleChart">Toggle Chart</button>
+  <canvas id="budgetChart" width="400" height="400"></canvas>
+
+</div>
+
+<script type="module" src="app.js"></script>
+
+</body>
+</html>
