@@ -12,6 +12,7 @@
       padding: 0;
       background-color: #1a1a1a;
       color: #fff;
+      transition: background-color 0.3s, color 0.3s;
     }
     .container {
       max-width: 400px;
@@ -20,6 +21,7 @@
       background-color: #2a2a2a;
       border-radius: 10px;
       box-shadow: 0 0 10px rgba(0,0,0,0.5);
+      transition: background-color 0.3s;
     }
     h1 {
       text-align: center;
@@ -41,11 +43,26 @@
       border: none;
       border-radius: 5px;
       cursor: pointer;
-      background-color: #4caf50;
       color: white;
+      transition: background-color 0.3s;
     }
-    button:hover {
+    .btn-calculate {
+      background-color: #4caf50;
+    }
+    .btn-calculate:hover {
       background-color: #45a049;
+    }
+    .logout-btn {
+      background-color: #f44336;
+    }
+    .logout-btn:hover {
+      background-color: #d32f2f;
+    }
+    .theme-btn {
+      background-color: #2196f3;
+    }
+    .theme-btn:hover {
+      background-color: #1976d2;
     }
     .result {
       margin-top: 20px;
@@ -53,13 +70,19 @@
       padding: 15px;
       border-radius: 8px;
       text-align: center;
+      transition: background-color 0.3s;
     }
-    .logout-btn {
-      background-color: #f44336;
-      margin-top: 15px;
+    /* Light theme */
+    body.light {
+      background-color: #f4f4f4;
+      color: #1a1a1a;
     }
-    .logout-btn:hover {
-      background-color: #d32f2f;
+    body.light .container {
+      background-color: #fff;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    }
+    body.light .result {
+      background-color: #e0e0e0;
     }
   </style>
 </head>
@@ -69,14 +92,14 @@
 
     <input type="number" id="income" placeholder="Enter Monthly Income" />
 
-    <button id="calculate">Calculate Budget</button>
-
     <div class="result" id="result">
       <p>Needs (50%): $<span id="needs">0</span></p>
       <p>Wants (30%): $<span id="wants">0</span></p>
       <p>Savings (20%): $<span id="savings">0</span></p>
     </div>
 
+    <button class="btn-calculate" id="calculate">Calculate</button>
+    <button class="theme-btn" id="toggle-theme">Toggle Dark/Light Mode</button>
     <button class="logout-btn" id="logout">Logout</button>
   </div>
 
@@ -84,26 +107,37 @@
     import { logout } from "./app.js";
 
     const incomeInput = document.getElementById("income");
-    const calculateBtn = document.getElementById("calculate");
     const needsEl = document.getElementById("needs");
     const wantsEl = document.getElementById("wants");
     const savingsEl = document.getElementById("savings");
     const logoutBtn = document.getElementById("logout");
+    const toggleThemeBtn = document.getElementById("toggle-theme");
 
-    calculateBtn.addEventListener("click", () => {
+    // Live calculation
+    function calculateBudget() {
       const income = parseFloat(incomeInput.value);
       if (isNaN(income) || income <= 0) {
-        alert("Please enter a valid income amount");
+        needsEl.innerText = "0";
+        wantsEl.innerText = "0";
+        savingsEl.innerText = "0";
         return;
       }
-
       needsEl.innerText = (income * 0.5).toFixed(2);
       wantsEl.innerText = (income * 0.3).toFixed(2);
       savingsEl.innerText = (income * 0.2).toFixed(2);
-    });
+    }
 
-    logoutBtn.addEventListener("click", () => {
-      logout();
+    incomeInput.addEventListener("input", calculateBudget);
+
+    // Button calculation (optional)
+    document.getElementById("calculate").addEventListener("click", calculateBudget);
+
+    // Logout
+    logoutBtn.addEventListener("click", () => logout());
+
+    // Dark/Light theme toggle
+    toggleThemeBtn.addEventListener("click", () => {
+      document.body.classList.toggle("light");
     });
   </script>
 </body>
