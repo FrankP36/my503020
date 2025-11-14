@@ -1,76 +1,63 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>50/30/20 Budget App Login</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>50/30/20 Budget App</title>
+<link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-gray-100 dark:bg-gray-900 transition-colors duration-300 flex items-center justify-center min-h-screen">
+<body>
+<div class="container">
+  <h1>50/30/20 Budget App</h1>
 
-  <div class="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-md w-full max-w-sm">
-    <h1 class="text-2xl font-bold mb-6 text-gray-900 dark:text-gray-100 text-center">Budget App Login</h1>
-
-    <input id="email" type="email" placeholder="Email" class="w-full p-3 mb-4 border rounded dark:bg-gray-700 dark:text-gray-100" />
-    <input id="password" type="password" placeholder="Password" class="w-full p-3 mb-4 border rounded dark:bg-gray-700 dark:text-gray-100" />
-
-    <button id="loginBtn" class="w-full bg-blue-500 text-white p-3 rounded mb-4 hover:bg-blue-600 transition">Login</button>
-    <button id="signupBtn" class="w-full bg-green-500 text-white p-3 rounded hover:bg-green-600 transition">Sign Up</button>
-
-    <div class="mt-4 text-center text-gray-700 dark:text-gray-300">
-      <label><input type="checkbox" id="darkModeToggle" /> Dark Mode</label>
-    </div>
+  <div id="auth-section">
+    <button id="google-login">Sign in with Google</button>
+    <h3>Or sign in with email</h3>
+    <input type="email" id="email" placeholder="Email">
+    <input type="password" id="password" placeholder="Password">
+    <button id="login-btn">Login</button>
+    <button id="signup-btn">Sign Up</button>
+    <p id="auth-error" class="error"></p>
   </div>
+</div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js";
+<script type="module">
+import { auth, provider } from './firebase-config.js';
+import { signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-auth.js";
 
-    // Firebase config
-    const firebaseConfig = {
-      apiKey: "AIzaSyDtLg-93_BcASTg4E5oniGlMkGXQOAo94k",
-      authDomain: "my503020.firebaseapp.com",
-      projectId: "my503020",
-      storageBucket: "my503020.firebasestorage.app",
-      messagingSenderId: "612049785066",
-      appId: "1:612049785066:web:ba85e8e2af24a05b894793",
-      measurementId: "G-N31DMC43S9"
-    };
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
+const googleLogin = document.getElementById('google-login');
+const loginBtn = document.getElementById('login-btn');
+const signupBtn = document.getElementById('signup-btn');
+const emailInput = document.getElementById('email');
+const passwordInput = document.getElementById('password');
+const authError = document.getElementById('auth-error');
 
-    // Redirect if already logged in
-    onAuthStateChanged(auth, user => { if(user) window.location.href="app.html"; });
+googleLogin.addEventListener('click', async () => {
+  try {
+    await signInWithPopup(auth, provider);
+    window.location.href = 'app.html';
+  } catch (err) {
+    authError.textContent = err.message;
+  }
+});
 
-    // Login
-    document.getElementById("loginBtn").addEventListener("click", () => {
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
-      signInWithEmailAndPassword(auth, email, password)
-        .then(() => window.location.href="app.html")
-        .catch(err => alert(err.message));
-    });
+loginBtn.addEventListener('click', async () => {
+  try {
+    await signInWithEmailAndPassword(auth, emailInput.value, passwordInput.value);
+    window.location.href = 'app.html';
+  } catch (err) {
+    authError.textContent = err.message;
+  }
+});
 
-    // Sign Up
-    document.getElementById("signupBtn").addEventListener("click", () => {
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
-      createUserWithEmailAndPassword(auth, email, password)
-        .then(() => window.location.href="app.html")
-        .catch(err => alert(err.message));
-    });
-
-    // Dark mode toggle
-    const toggle = document.getElementById("darkModeToggle");
-    if(localStorage.getItem("darkMode")==="true") {
-      document.documentElement.classList.add("dark");
-      toggle.checked = true;
-    }
-    toggle.addEventListener("change", () => {
-      document.documentElement.classList.toggle("dark");
-      localStorage.setItem("darkMode", document.documentElement.classList.contains("dark"));
-    });
-  </script>
-
+signupBtn.addEventListener('click', async () => {
+  try {
+    await createUserWithEmailAndPassword(auth, emailInput.value, passwordInput.value);
+    window.location.href = 'app.html';
+  } catch (err) {
+    authError.textContent = err.message;
+  }
+});
+</script>
 </body>
 </html>
