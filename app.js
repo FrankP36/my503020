@@ -21,14 +21,14 @@ const auth = getAuth(app);
 
 onAuthStateChanged(auth, (user) => {
   if (!user) {
-    window.location.href = "index.html"; // redirect to login if not signed in
+    console.log("User signed out"); // just log, no redirect
   }
 });
 
-// Logout functionality
+// Logout functionality (just sign out, no redirect)
 logoutBtn.addEventListener('click', () => {
   signOut(auth).then(() => {
-    window.location.href = "index.html";
+    alert("You have signed out successfully");
   }).catch((error) => {
     console.error("Error logging out:", error);
   });
@@ -40,11 +40,12 @@ if (localStorage.getItem('darkMode') === 'enabled') {
 }
 
 toggleDarkBtn.addEventListener('click', () => {
-  document.body.classList.toggle('dark');
   if (document.body.classList.contains('dark')) {
-    localStorage.setItem('darkMode', 'enabled');
-  } else {
+    document.body.classList.remove('dark');
     localStorage.setItem('darkMode', 'disabled');
+  } else {
+    document.body.classList.add('dark');
+    localStorage.setItem('darkMode', 'enabled');
   }
 });
 
