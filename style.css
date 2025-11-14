@@ -1,32 +1,8 @@
-body {
-  font-family: Arial, sans-serif;
-  margin: 0;
-  padding: 20px;
-  background-color: #fff;
-  color: #333;
-  transition: all 0.3s ease;
-}
-body.dark {
-  background-color: #121212;
-  color: #eee;
-}
-.container {
-  max-width: 500px;
-  margin: auto;
-  text-align: center;
-}
-input {
-  padding: 10px;
-  margin: 5px;
-  width: 80%;
-}
-button {
-  padding: 10px 20px;
-  margin: 5px;
-}
-.error {
-  color: red;
-}
-canvas {
-  margin-top: 20px;
-}
+body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #fff; color: #333; transition: all 0.3s ease; }
+body.dark { background-color: #121212; color: #eee; }
+.container { max-width: 500px; margin: auto; text-align: center; }
+input { padding: 10px; margin: 5px; width: 80%; }
+button { padding: 10px 20px; margin: 5px; cursor:pointer; }
+button:hover { opacity: 0.9; }
+.error { color: red; }
+canvas { margin-top: 20px; }
