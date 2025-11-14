@@ -1,73 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Login • 50/30/20 Budget App</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login • 50/30/20 Budget App</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 
-<body>
+<body class="dark">
+  <div class="login-container">
 
-<div class="container">
+    <h1 class="login-title">Welcome Back</h1>
+    <p class="login-subtitle">Sign in to continue</p>
 
-  <h1>Welcome</h1>
-  <h2>Sign in to continue</h2>
+    <!-- Email Login -->
+    <form id="login-form" class="login-form">
+      <input type="email" id="email" placeholder="Email" required />
+      <input type="password" id="password" placeholder="Password" required />
+      <button type="submit" class="btn-primary">Login</button>
+    </form>
 
-  <button id="google-login">Sign in with Google</button>
+    <div class="divider"><span>OR</span></div>
 
-  <h3>Or use Email</h3>
-  <input type="email" id="email" placeholder="Email">
-  <input type="password" id="password" placeholder="Password">
+    <!-- Google Sign-in -->
+    <button id="google-login" class="btn-google">
+      <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="google-icon" />
+      Sign in with Google
+    </button>
 
-  <button id="login-btn">Login</button>
-  <button id="signup-btn">Sign Up</button>
+    <p id="login-error" class="error-text"></p>
+  </div>
 
-  <p id="auth-error" class="error"></p>
-
-</div>
-
-<script type="module">
-import { auth, provider } from './firebase-config.js';
-import { 
-  signInWithPopup,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  onAuthStateChanged 
-} from "https://www.gstatic.com/firebasejs/10.6.0/firebase-auth.js";
-
-const googleLogin = document.getElementById("google-login");
-const loginBtn = document.getElementById("login-btn");
-const signupBtn = document.getElementById("signup-btn");
-const email = document.getElementById("email");
-const password = document.getElementById("password");
-const authError = document.getElementById("auth-error");
-
-googleLogin.onclick = async () => {
-  try {
-    await signInWithPopup(auth, provider);
-    window.location.href = "app.html";
-  } catch (e) { authError.textContent = e.message; }
-};
-
-loginBtn.onclick = async () => {
-  try {
-    await signInWithEmailAndPassword(auth, email.value, password.value);
-    window.location.href = "app.html";
-  } catch (e) { authError.textContent = e.message; }
-};
-
-signupBtn.onclick = async () => {
-  try {
-    await createUserWithEmailAndPassword(auth, email.value, password.value);
-    window.location.href = "app.html";
-  } catch (e) { authError.textContent = e.message; }
-};
-
-onAuthStateChanged(auth, user => {
-  if (user) window.location.href = "app.html";
-});
-</script>
-
+  <script type="module" src="firebase-config.js"></script>
+  <script type="module" src="app.js"></script>
 </body>
 </html>
