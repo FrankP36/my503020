@@ -1,63 +1,625 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>50/30/20 Budget App</title>
-<link rel="stylesheet" href="style.css">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Budget Planner — Live FX (Exchangerate.host)</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --card: #111827;
+    --muted: #94a3b8;
+    --text: #e5e7eb;
+    --accent: #22c55e;
+    --warn: #f59e0b;
+    --danger: #ef4444;
+    --input: #1f2937;
+    --ring: #2563eb33;
+    --blue: #2563eb;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, "Helvetica Neue", Arial, Noto Sans;
+    background: linear-gradient(180deg, #0b1220, var(--bg));
+    color: var(--text);
+    min-height: 100vh;
+    display: grid;
+    place-items: start center;
+    padding: 20px;
+  }
+  .wrap { width: 100%; max-width: 980px; display: grid; gap: 14px; }
+  header { display: grid; gap: 6px; }
+  header h1 { margin: 0; font-size: clamp(20px, 3vw, 28px); }
+  header p { margin: 0; color: var(--muted); }
+  .grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+  @media (min-width: 900px){ .grid { grid-template-columns: 1.1fr 1fr; } }
+  .card {
+    background: linear-gradient(180deg, #0d1220, var(--card));
+    border: 1px solid #1f2937;
+    border-radius: 14px;
+    padding: 14px;
+    box-shadow: 0 10px 24px rgba(0,0,0,0.25);
+  }
+  .section-title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-weight: 600; }
+  .controls { display: grid; gap: 10px; }
+  .row { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 10px; }
+  label { color: var(--muted); font-size: 14px; }
+  .input, select, .btn {
+    background: var(--input);
+    color: var(--text);
+    border: 1px solid #374151;
+    border-radius: 10px;
+    padding: 10px 12px;
+    outline: none;
+  }
+  .input { display: flex; align-items: center; gap: 8px; }
+  .input:focus-within, select:focus { border-color: var(--blue); box-shadow: 0 0 0 4px var(--ring); }
+  .input input[type="number"], .input input[type="text"] {
+    flex: 1; background: transparent; border: none; color: var(--text); font-size: 15px; min-width: 0; outline: none;
+    -moz-appearance: textfield;
+  }
+  .input input::-webkit-outer-spin-button, .input input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .hint { font-size: 12px; color: var(--muted); }
+  .pill { display: inline-flex; gap: 6px; align-items: center; padding: 6px 10px; border-radius: 999px; font-size: 12px; border: 1px solid #334155; color: var(--muted); background: #0b1324; }
+  .btn { cursor: pointer; font-weight: 600; }
+  .btn.primary { background: var(--blue); border-color: var(--blue); }
+  .btn.ghost { background: transparent; border-color: #334155; }
+  .flex { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .totals { display: grid; gap: 10px; }
+  .stat { display: flex; justify-content: space-between; align-items: baseline; padding: 10px 12px; border-radius: 10px; border: 1px solid #1f2937; background: #0c1426; }
+  .stat .label { color: var(--muted); font-size: 13px; }
+  .stat .value { font-weight: 700; font-size: 18px; }
+  .value.positive { color: var(--accent); }
+  .value.warn { color: var(--warn); }
+  .value.negative { color: var(--danger); }
+  .table { width: 100%; border-collapse: collapse; }
+  .table th, .table td { padding: 6px 8px; border-bottom: 1px solid #1f2937; font-size: 14px; }
+  .table th { text-align: left; color: var(--muted); font-weight: 600; }
+  .small { font-size: 12px; color: var(--muted); }
+  .row-actions { display: flex; gap: 6px; }
+</style>
 </head>
 <body>
-<div class="container">
-  <h1>50/30/20 Budget App</h1>
+<div class="wrap">
+  <header>
+    <h1>Budget Planner</h1>
+    <p>Plan your budget with live exchange rates (Exchangerate.host), auto/manual calculation, and 50/30/20 guidance.</p>
+  </header>
 
-  <div id="auth-section">
-    <button id="google-login">Sign in with Google</button>
-    <h3>Or sign in with email</h3>
-    <input type="email" id="email" placeholder="Email">
-    <input type="password" id="password" placeholder="Password">
-    <button id="login-btn">Login</button>
-    <button id="signup-btn">Sign Up</button>
-    <p id="auth-error" class="error"></p>
+  <div class="grid">
+    <section class="card">
+      <div class="section-title">
+        <span>Settings</span>
+        <span class="pill" id="periodPill">Monthly</span>
+      </div>
+      <div class="controls">
+        <div class="flex" style="justify-content: space-between;">
+          <div class="flex" style="gap:12px;">
+            <div class="flex">
+              <label for="currency" class="hint">Currency</label>
+              <select id="currency" title="Display currency">
+                <option value="USD" selected>USD $</option>
+                <option value="EUR">EUR €</option>
+                <option value="GBP">GBP £</option>
+                <option value="JPY">JPY ¥</option>
+                <option value="CAD">CAD $</option>
+                <option value="AUD">AUD $</option>
+                <option value="INR">INR ₹</option>
+                <option value="NGN">NGN ₦</option>
+                <option value="ZAR">ZAR R</option>
+                <option value="KES">KES KSh</option>
+                <option value="TZS">TZS TSh</option>
+                <option value="UGX">UGX USh</option>
+              </select>
+            </div>
+            <div class="flex">
+              <label for="period" class="hint">Period</label>
+              <select id="period" title="Monthly or Annual">
+                <option value="monthly" selected>Monthly</option>
+                <option value="annual">Annual</option>
+              </select>
+            </div>
+            <div class="flex">
+              <label for="calcMode" class="hint">Calculation</label>
+              <select id="calcMode" title="Auto or Manual">
+                <option value="auto" selected>Auto</option>
+                <option value="manual">Manual</option>
+              </select>
+            </div>
+          </div>
+          <div class="flex">
+            <button id="calcBtn" class="btn primary" style="display:none;">Calculate</button>
+            <button id="share" class="btn">Copy Snapshot</button>
+          </div>
+        </div>
+
+        <div class="row">
+          <label for="income">Income</label>
+          <div class="input"><span id="curSymbol1">$</span><input id="income" type="number" min="0" step="1" value="3500" /></div>
+        </div>
+
+        <div class="section-title" style="margin-top:6px;">
+          <span>Categories</span>
+          <span class="small">Classify as Needs, Wants, or Savings (50/30/20 guideline).</span>
+        </div>
+
+        <table class="table" id="catTable">
+          <thead>
+            <tr>
+              <th style="width:38%;">Name</th>
+              <th style="width:22%;">Amount</th>
+              <th style="width:20%;">Type</th>
+              <th style="width:20%;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="catBody"></tbody>
+        </table>
+
+        <div class="flex">
+          <button id="addRow" class="btn ghost">+ Add Category</button>
+          <button id="reset" class="btn">Reset to Example</button>
+        </div>
+
+        <p class="small">Rates update hourly from Exchangerate.host. If the API fails, we use the last successful or sample rates.</p>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-title"><span>Results</span></div>
+      <div class="totals">
+        <div class="stat">
+          <span class="label" id="incomeLabel">Income (Monthly)</span>
+          <span class="value" id="incomeVal">$3,500</span>
+        </div>
+        <div class="stat">
+          <span class="label">Needs total</span>
+          <span class="value" id="needsVal">$0</span>
+        </div>
+        <div class="stat">
+          <span class="label">Wants total</span>
+          <span class="value" id="wantsVal">$0</span>
+        </div>
+        <div class="stat">
+          <span class="label">Savings total</span>
+          <span class="value" id="savingsVal">$0</span>
+        </div>
+        <div class="stat">
+          <span class="label">Total expenses</span>
+          <span class="value" id="totalVal">$0</span>
+        </div>
+        <div class="stat">
+          <span class="label">Remaining</span>
+          <span class="value positive" id="remainVal">$0</span>
+        </div>
+        <div class="stat">
+          <span class="label">Savings as % of income</span>
+          <span class="value" id="savingsPct">—</span>
+        </div>
+        <div class="stat">
+          <span class="label">50/30/20 vs actual (Needs/Wants/Savings)</span>
+          <span class="value" id="fiveThreeTwo">—</span>
+        </div>
+      </div>
+      <p class="small" id="advice">Enter your numbers to see guidance. Aim for 50% Needs, 30% Wants, 20% Savings as a starting point.</p>
+      <p class="small" id="fxStatus"></p>
+    </section>
   </div>
 </div>
 
-<script type="module">
-import { auth, provider } from './firebase-config.js';
-import { signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-auth.js";
+<script>
+(function(){
+  // Persistent storage keys
+  const LS_FX = "bp_fx_rates_v1";
+  const LS_FX_TIME = "bp_fx_time_v1";
 
-const googleLogin = document.getElementById('google-login');
-const loginBtn = document.getElementById('login-btn');
-const signupBtn = document.getElementById('signup-btn');
-const emailInput = document.getElementById('email');
-const passwordInput = document.getElementById('password');
-const authError = document.getElementById('auth-error');
+  // Currency symbols
+  const CUR = {
+    USD:"$", EUR:"€", GBP:"£", JPY:"¥", CAD:"$", AUD:"$", INR:"₹", NGN:"₦", ZAR:"R",
+    KES:"KSh", TZS:"TSh", UGX:"USh"
+  };
 
-googleLogin.addEventListener('click', async () => {
+  // Start with sample fallback rates relative to USD (1 USD = rate)
+  let FX = {
+    USD: 1,
+    EUR: 0.93,
+    GBP: 0.81,
+    JPY: 153,
+    CAD: 1.38,
+    AUD: 1.52,
+    INR: 84,
+    NGN: 1600,
+    ZAR: 18.5,
+    KES: 129,    // sample
+    TZS: 2590,   // sample
+    UGX: 3800    // sample
+  };
+
+  // Load last known FX from localStorage
   try {
-    await signInWithPopup(auth, provider);
-    window.location.href = 'app.html';
-  } catch (err) {
-    authError.textContent = err.message;
-  }
-});
+    const saved = JSON.parse(localStorage.getItem(LS_FX) || "null");
+    if (saved && typeof saved === "object") {
+      FX = { ...FX, ...saved };
+    }
+  } catch {}
 
-loginBtn.addEventListener('click', async () => {
-  try {
-    await signInWithEmailAndPassword(auth, emailInput.value, passwordInput.value);
-    window.location.href = 'app.html';
-  } catch (err) {
-    authError.textContent = err.message;
-  }
-});
+  const $ = (id) => document.getElementById(id);
+  const els = {
+    currency: $("currency"),
+    period: $("period"),
+    calcMode: $("calcMode"),
+    calcBtn: $("calcBtn"),
+    share: $("share"),
+    income: $("income"),
+    curSymbol1: $("curSymbol1"),
+    catBody: $("catBody"),
+    addRow: $("addRow"),
+    reset: $("reset"),
+    incomeLabel: $("incomeLabel"),
+    incomeVal: $("incomeVal"),
+    needsVal: $("needsVal"),
+    wantsVal: $("wantsVal"),
+    savingsVal: $("savingsVal"),
+    totalVal: $("totalVal"),
+    remainVal: $("remainVal"),
+    savingsPct: $("savingsPct"),
+    fiveThreeTwo: $("fiveThreeTwo"),
+    advice: $("advice"),
+    periodPill: $("periodPill"),
+    fxStatus: $("fxStatus"),
+  };
 
-signupBtn.addEventListener('click', async () => {
-  try {
-    await createUserWithEmailAndPassword(auth, emailInput.value, passwordInput.value);
-    window.location.href = 'app.html';
-  } catch (err) {
-    authError.textContent = err.message;
+  const TYPES = ["Needs","Wants","Savings"];
+
+  // Data model (income stored as monthly USD base)
+  let state = {
+    currency: "USD",
+    period: "monthly",
+    calcMode: "auto",
+    incomeUSD: 3500,
+    rows: [],  // { id, name, amountUSD, type }
+  };
+
+  // FX helpers
+  const toUSD = (amountDisplay) => {
+    const rate = FX[state.currency] || 1;
+    if (!isFinite(amountDisplay)) return 0;
+    return amountDisplay / rate;
+  };
+  const fromUSD = (amountUSD) => {
+    const rate = FX[state.currency] || 1;
+    return amountUSD * rate;
+  };
+  const fmt = (n) => {
+    try {
+      return n.toLocaleString(undefined, {
+        style: "currency",
+        currency: state.currency,
+        maximumFractionDigits: 0,
+        minimumFractionDigits: 0
+      });
+    } catch {
+      const sym = CUR[state.currency] || "";
+      return `${sym}${Math.round(n).toLocaleString()}`;
+    }
+  };
+
+  // Live FX update using Exchangerate.host
+  async function updateFX() {
+    const url = "https://api.exchangerate.host/latest?base=USD";
+    let ok = false;
+    try {
+      const response = await fetch(url, { cache: "no-store" });
+      const data = await response.json();
+      if (data && data.rates && data.rates.USD === 1) {
+        // Map needed currencies; keep existing if missing
+        const mapped = {
+          USD: 1,
+          EUR: data.rates.EUR ?? FX.EUR,
+          GBP: data.rates.GBP ?? FX.GBP,
+          JPY: data.rates.JPY ?? FX.JPY,
+          CAD: data.rates.CAD ?? FX.CAD,
+          AUD: data.rates.AUD ?? FX.AUD,
+          INR: data.rates.INR ?? FX.INR,
+          NGN: data.rates.NGN ?? FX.NGN,
+          ZAR: data.rates.ZAR ?? FX.ZAR,
+          KES: data.rates.KES ?? FX.KES,
+          TZS: data.rates.TZS ?? FX.TZS,
+          UGX: data.rates.UGX ?? FX.UGX
+        };
+        FX = mapped;
+        ok = true;
+        localStorage.setItem(LS_FX, JSON.stringify(FX));
+        localStorage.setItem(LS_FX_TIME, String(Date.now()));
+      } else if (data && data.success === false) {
+        // API returned an error object (e.g., missing_access_key). Keep fallback.
+        console.warn("FX API error:", data.error || data);
+      }
+    } catch (e) {
+      console.warn("FX fetch failed; using fallback/sample rates.", e);
+    }
+    const last = Number(localStorage.getItem(LS_FX_TIME) || 0);
+    const agoMin = last ? Math.round((Date.now() - last) / 60000) : null;
+    els.fxStatus.textContent = ok
+      ? `Live rates updated just now from Exchangerate.host.`
+      : last
+        ? `Using cached rates from ${agoMin} min ago.`
+        : `Using sample fallback rates (live update unavailable).`;
+    // Recompute with updated FX
+    syncCurrencyUI();
+    triggerCompute();
   }
-});
+
+  // Period factor
+  const getPeriodFactor = () => state.period === "annual" ? 12 : 1;
+
+  // Rows
+  function addRow(data){
+    const id = (crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now() + Math.random());
+    const tr = document.createElement("tr");
+    tr.dataset.id = id;
+
+    // Name cell
+    const nameTd = document.createElement("td");
+    const nameWrap = document.createElement("div");
+    nameWrap.className = "input";
+    const nameField = document.createElement("input");
+    nameField.type = "text";
+    nameField.placeholder = "Category (e.g., Rent)";
+    nameWrap.appendChild(nameField);
+    nameTd.appendChild(nameWrap);
+
+    // Amount cell
+    const amountTd = document.createElement("td");
+    const amountWrap = document.createElement("div");
+    amountWrap.className = "input";
+    const cur = document.createElement("span");
+    cur.textContent = CUR[state.currency] || "$";
+    amountWrap.appendChild(cur);
+    const amountField = document.createElement("input");
+    amountField.type = "number"; amountField.min = "0"; amountField.step = "1";
+    amountWrap.appendChild(amountField);
+    amountTd.appendChild(amountWrap);
+
+    // Type cell
+    const typeTd = document.createElement("td");
+    const typeSel = document.createElement("select");
+    TYPES.forEach(t => {
+      const opt = document.createElement("option");
+      opt.value = t; opt.textContent = t;
+      typeSel.appendChild(opt);
+    });
+    typeTd.appendChild(typeSel);
+
+    // Actions cell
+    const actionsTd = document.createElement("td");
+    const act = document.createElement("div");
+    act.className = "row-actions";
+    const delBtn = document.createElement("button");
+    delBtn.className = "btn";
+    delBtn.style.padding = "6px 10px";
+    delBtn.textContent = "Delete";
+    delBtn.addEventListener("click", () => {
+      tr.remove();
+      state.rows = state.rows.filter(r => r.id !== id);
+      triggerCompute();
+    });
+    act.appendChild(delBtn);
+    actionsTd.appendChild(act);
+
+    tr.appendChild(nameTd);
+    tr.appendChild(amountTd);
+    tr.appendChild(typeTd);
+    tr.appendChild(actionsTd);
+    els.catBody.appendChild(tr);
+
+    // Initialize from data
+    if (data){
+      nameField.value = data.name || "";
+      amountField.value = Math.round(fromUSD(data.amountUSD || 0));
+      typeSel.value = data.type || "Needs";
+    }
+
+    // State row descriptor
+    const row = {
+      id,
+      get name(){ return nameField.value.trim(); },
+      set name(v){ nameField.value = v; },
+      get amountUSD(){ return toUSD(+amountField.value || 0); },
+      set amountUSD(v){ amountField.value = Math.round(fromUSD(v)); },
+      get type(){ return typeSel.value; },
+      set type(v){ typeSel.value = v; }
+    };
+    state.rows.push(row);
+
+    // Bind
+    const onChange = () => triggerCompute();
+    nameField.addEventListener("input", onChange);
+    amountField.addEventListener("input", onChange);
+    typeSel.addEventListener("change", onChange);
+
+    return row;
+  }
+
+  function presetExample(){
+    els.catBody.innerHTML = "";
+    state.rows = [];
+    addRow({ name: "Housing (Rent)", amountUSD: 1200, type: "Needs" });
+    addRow({ name: "Transportation", amountUSD: 225, type: "Needs" });
+    addRow({ name: "Groceries & Household", amountUSD: 400, type: "Needs" });
+    addRow({ name: "Savings Goal", amountUSD: 500, type: "Savings" });
+    addRow({ name: "Entertainment & Leisure", amountUSD: 200, type: "Wants" });
+  }
+
+  function compute(){
+    const periodFactor = getPeriodFactor();
+    const incomeMonthUSD = state.incomeUSD;
+    const incomePeriodUSD = incomeMonthUSD * periodFactor;
+
+    let needsUSD = 0, wantsUSD = 0, savingsUSD = 0, totalUSD = 0;
+    state.rows.forEach(r => {
+      const amt = r.amountUSD * periodFactor;
+      totalUSD += amt;
+      if (r.type === "Savings") savingsUSD += amt;
+      else if (r.type === "Wants") wantsUSD += amt;
+      else needsUSD += amt;
+    });
+
+    const remainingUSD = incomePeriodUSD - totalUSD;
+
+    // Display
+    els.incomeLabel.textContent = `Income (${state.period === "monthly" ? "Monthly" : "Annual"})`;
+    els.incomeVal.textContent = fmt(fromUSD(incomePeriodUSD));
+    els.needsVal.textContent = fmt(fromUSD(needsUSD));
+    els.wantsVal.textContent = fmt(fromUSD(wantsUSD));
+    els.savingsVal.textContent = fmt(fromUSD(savingsUSD));
+    els.totalVal.textContent = fmt(fromUSD(totalUSD));
+    els.remainVal.textContent = fmt(fromUSD(remainingUSD));
+
+    // Color coding
+    els.remainVal.classList.remove("positive","warn","negative");
+    if (remainingUSD > 0) els.remainVal.classList.add("positive");
+    else if (remainingUSD === 0) els.remainVal.classList.add("warn");
+    else els.remainVal.classList.add("negative");
+
+    // Savings %
+    const savingsPct = incomePeriodUSD > 0 ? (100 * savingsUSD / incomePeriodUSD) : 0;
+    els.savingsPct.textContent = incomePeriodUSD > 0 ? savingsPct.toFixed(2) + "%" : "—";
+
+    // 50/30/20 comparison
+    const tgtNeeds = 0.50 * incomePeriodUSD;
+    const tgtWants = 0.30 * incomePeriodUSD;
+    const tgtSavings = 0.20 * incomePeriodUSD;
+
+    const needsDiff = needsUSD - tgtNeeds;
+    const wantsDiff = wantsUSD - tgtWants;
+    const savingsDiff = savingsUSD - tgtSavings;
+
+    const sign = (n)=> n>0?"+":"";
+    els.fiveThreeTwo.textContent =
+      `Needs ${sign(needsDiff)}${fmt(fromUSD(needsDiff))}, ` +
+      `Wants ${sign(wantsDiff)}${fmt(fromUSD(wantsDiff))}, ` +
+      `Savings ${sign(savingsDiff)}${fmt(fromUSD(savingsDiff))}`;
+
+    // Advice
+    let msg = "";
+    if (incomeMonthUSD <= 0) {
+      msg = "Enter a positive income to begin.";
+    } else if (remainingUSD < 0) {
+      msg = "Warning: Over budget. Reduce expenses or increase income.";
+    } else if (savingsPct < 10) {
+      msg = "Consider increasing savings toward 10–20% if possible.";
+    } else if (savingsPct >= 20) {
+      msg = "Excellent: Savings are at or above 20% of income.";
+    } else {
+      msg = "Solid: You’re saving at least 10% of income.";
+    }
+    const needsShare = incomePeriodUSD > 0 ? (100*needsUSD/incomePeriodUSD) : 0;
+    const wantsShare = incomePeriodUSD > 0 ? (100*wantsUSD/incomePeriodUSD) : 0;
+    const tips = [];
+    if (needsShare > 55) tips.push("Needs above 55%—consider essentials optimization.");
+    if (wantsShare > 35) tips.push("Wants above 35%—trim discretionary items.");
+    if (tips.length) msg += " " + tips.join(" ");
+    els.advice.textContent = msg;
+  }
+
+  function triggerCompute(){
+    if (state.calcMode === "auto") compute();
+  }
+
+  function syncCurrencyUI(){
+    // Update symbol in inputs
+    els.curSymbol1.textContent = CUR[state.currency] || "$";
+    [...els.catBody.querySelectorAll("td:nth-child(2) .input span:first-child")].forEach(span => span.textContent = CUR[state.currency] || "$");
+  }
+
+  // Bind settings
+  els.currency.addEventListener("change", () => {
+    state.currency = els.currency.value;
+    syncCurrencyUI();
+    triggerCompute();
+  });
+
+  els.period.addEventListener("change", () => {
+    state.period = els.period.value;
+    els.periodPill.textContent = state.period === "monthly" ? "Monthly" : "Annual";
+    triggerCompute();
+  });
+
+  els.calcMode.addEventListener("change", () => {
+    state.calcMode = els.calcMode.value;
+    els.calcBtn.style.display = state.calcMode === "manual" ? "inline-block" : "none";
+  });
+  els.calcBtn.addEventListener("click", compute);
+
+  // Income binding
+  els.income.addEventListener("input", () => {
+    const displayVal = +els.income.value || 0;
+    const usdMonthly = toUSD(displayVal) / getPeriodFactor(); // store monthly USD
+    state.incomeUSD = usdMonthly;
+    triggerCompute();
+  });
+
+  // Add/reset bindings
+  els.addRow.addEventListener("click", () => addRow({ name: "", amountUSD: 0, type: "Needs" }));
+  els.reset.addEventListener("click", () => {
+    els.currency.value = "USD";
+    state.currency = "USD";
+    els.period.value = "monthly";
+    state.period = "monthly";
+    els.calcMode.value = "auto";
+    state.calcMode = "auto";
+    els.calcBtn.style.display = "none";
+    els.income.value = 3500;
+    state.incomeUSD = 3500;
+    presetExample();
+    syncCurrencyUI();
+    compute();
+  });
+
+  // Share snapshot
+  els.share.addEventListener("click", async () => {
+    const periodFactor = getPeriodFactor();
+    const lines = [
+      "Budget Snapshot",
+      "----------------",
+      `Currency: ${state.currency}`,
+      `Period: ${state.period}`,
+      `Income: ${fmt(fromUSD(state.incomeUSD * periodFactor))}`,
+      "",
+      "Categories:"
+    ];
+    state.rows.forEach(r => {
+      const amt = fromUSD(r.amountUSD * periodFactor);
+      lines.push(`- ${r.name || "Untitled"} (${r.type}): ${fmt(amt)}`);
+    });
+    const totalUSD = state.rows.reduce((s,r)=> s + r.amountUSD, 0) * periodFactor;
+    const remainUSD = state.incomeUSD * periodFactor - totalUSD;
+    lines.push("");
+    lines.push(`Total expenses: ${fmt(fromUSD(totalUSD))}`);
+    lines.push(`Remaining: ${fmt(fromUSD(remainUSD))}`);
+    try {
+      await navigator.clipboard.writeText(lines.join("\n"));
+      const original = els.share.textContent;
+      els.share.textContent = "Copied!";
+      setTimeout(()=> els.share.textContent = original, 1500);
+    } catch {
+      alert(lines.join("\n"));
+    }
+  });
+
+  // Init
+  presetExample();
+  syncCurrencyUI();
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") {
+      updateFX();
+    }
+  });
+  updateFX();                     // run on load
+  setInterval(updateFX, 60*60*1000); // every hour
+  compute();                      // initial compute with current FX
+})();
 </script>
 </body>
 </html>
