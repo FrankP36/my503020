@@ -1,45 +1,45 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>50/30/20 Budget Dashboard</title>
-<link rel="stylesheet" href="style.css">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>50/30/20 Budget Calculator</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-<div class="container">
-  <header>
-    <h1>50/30/20 Budget Dashboard</h1>
-    <button id="toggle-dark">Toggle Dark Mode</button>
-    <button id="logout">Logout</button>
-  </header>
+    <header>
+        <h1>50/30/20 Budget Calculator</h1>
+        <button id="toggle-dark">Toggle Dark Mode</button>
+        <button id="logout">Logout</button>
+    </header>
 
-  <section class="income-section">
-    <h2>Enter Your Monthly Income</h2>
-    <input type="number" id="income" placeholder="Enter your total income">
-    <button id="calculate">Calculate Budget</button>
-  </section>
+    <main>
+        <section class="income-section">
+            <label for="income">Enter Monthly Income:</label>
+            <input type="number" id="income" placeholder="e.g. 5000">
+            <button id="calculate">Calculate Budget</button>
+        </section>
 
-  <section id="results-section">
-    <h2>Budget Allocation</h2>
-    <div id="results">
-      <p><strong>Needs (50%)</strong>: <span id="needs">0</span> <small>Essentials like rent, groceries, utilities</small></p>
-      <p><strong>Wants (30%)</strong>: <span id="wants">0</span> <small>Leisure, shopping, entertainment</small></p>
-      <p><strong>Savings (20%)</strong>: <span id="savings">0</span> <small>Savings, investments, debt repayment</small></p>
-    </div>
-  </section>
+        <section class="budget-results">
+            <h2>Budget Allocation</h2>
+            <ul>
+                <li>Needs (50%): $<span id="needs">0</span></li>
+                <li>Wants (30%): $<span id="wants">0</span></li>
+                <li>Savings (20%): $<span id="savings">0</span></li>
+            </ul>
+        </section>
 
-  <section class="chart-section">
-    <canvas id="budgetChart" width="400" height="400"></canvas>
-    <button id="toggleChart">Toggle Pie/Bar Chart</button>
-  </section>
+        <section class="chart-section">
+            <canvas id="budgetChart" width="400" height="400"></canvas>
+            <button id="toggleChart">Toggle Chart Type (Pie/Bar)</button>
+        </section>
+    </main>
 
-  <footer>
-    <p>50/30/20 Budget App — Plan your finances effectively</p>
-  </footer>
-</div>
+    <footer>
+        <p>&copy; 2025 Budget App</p>
+    </footer>
 
-<script type="module" src="app.js"></script>
+    <script type="module" src="app.js"></script>
 </body>
 </html>
