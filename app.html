@@ -1,39 +1,45 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>50/30/20 Budget App</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>50/30/20 Budget App</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <header>
-        <h1>50/30/20 Budget Planner</h1>
-        <button id="loginBtn">Login with Google</button>
-        <button id="logoutBtn" style="display:none;">Logout</button>
-        <button id="darkModeToggle">Toggle Dark Mode</button>
-    </header>
+  <!-- Header -->
+  <header>
+    <h1>50/30/20 Budget Planner</h1>
+    <div class="auth-buttons">
+      <button id="googleBtn">Sign in with Google</button>
+      <button id="logoutBtn">Logout</button>
+      <button id="darkToggle">Toggle Dark Mode</button>
+    </div>
+  </header>
 
-    <main id="mainContent" style="display:none;">
-        <section id="budgetSection">
-            <form id="budgetForm">
-                <label for="income">Enter your monthly income:</label>
-                <input type="number" id="income" placeholder="e.g., 3000" required>
-                <button type="submit">Calculate</button>
-            </form>
+  <!-- Budget Form -->
+  <main>
+    <form id="budgetForm">
+      <label for="income">Enter your monthly income:</label>
+      <input type="number" id="income" placeholder="e.g., 5000" required>
+      <button type="submit">Calculate Budget</button>
+    </form>
 
-            <ul id="budgetList"></ul>
+    <!-- Budget Lists -->
+    <section class="budget-lists">
+      <ul id="needsList"></ul>
+      <ul id="wantsList"></ul>
+      <ul id="savingsList"></ul>
+    </section>
 
-            <button id="chartToggle">Toggle Pie/Bar Chart</button>
-            <canvas id="budgetChart" width="400" height="400"></canvas>
-        </section>
-    </main>
+    <!-- Chart Section -->
+    <section class="chart-section">
+      <canvas id="budgetChart"></canvas>
+      <button id="chartToggle">Toggle Pie/Bar Chart</button>
+    </section>
+  </main>
 
-    <footer>
-        <p>&copy; 2025 50/30/20 Budget App</p>
-    </footer>
-
-    <script type="module" src="app.js"></script>
+  <script type="module" src="app.js"></script>
 </body>
 </html>
