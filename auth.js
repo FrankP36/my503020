@@ -1,9 +1,9 @@
 // auth.js
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-analytics.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js";
 
-// 🔹 Firebase config
+// Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyDtLg-93_BcASTg4E5oniGlMkGXQOAo94k",
   authDomain: "my503020.firebaseapp.com",
@@ -26,52 +26,41 @@ const loginBtn = document.getElementById("loginBtn");
 const registerBtn = document.getElementById("registerBtn");
 const googleBtn = document.getElementById("googleBtn");
 const messageDiv = document.getElementById("message");
+const darkToggle = document.getElementById("darkModeToggle");
 
-// 🔹 Register
+// Dark Mode
+const setDarkMode = (isDark) => {
+  document.documentElement.classList.toggle("dark", isDark);
+  localStorage.setItem("darkMode", isDark);
+};
+darkToggle.addEventListener("click", () => setDarkMode(!document.documentElement.classList.contains("dark")));
+if(localStorage.getItem("darkMode") === "true") setDarkMode(true);
+
+// Register
 registerBtn.addEventListener("click", () => {
   createUserWithEmailAndPassword(auth, emailInput.value, passwordInput.value)
     .then(() => {
       messageDiv.style.color = "green";
       messageDiv.textContent = "Registered successfully!";
+      window.location.href = "app.html";
     })
-    .catch(error => {
-      messageDiv.style.color = "red";
-      messageDiv.textContent = error.message;
-    });
+    .catch(error => messageDiv.textContent = error.message);
 });
 
-// 🔹 Login
+// Login
 loginBtn.addEventListener("click", () => {
   signInWithEmailAndPassword(auth, emailInput.value, passwordInput.value)
-    .then(() => {
-      messageDiv.style.color = "green";
-      messageDiv.textContent = "Logged in successfully!";
-      window.location.href = "chat.html"; // redirect
-    })
-    .catch(error => {
-      messageDiv.style.color = "red";
-      messageDiv.textContent = error.message;
-    });
+    .then(() => window.location.href = "app.html")
+    .catch(error => messageDiv.textContent = error.message);
 });
 
-// 🔹 Google Sign-In
+// Google Sign-In
 googleBtn.addEventListener("click", () => {
   const provider = new GoogleAuthProvider();
   signInWithPopup(auth, provider)
-    .then(() => {
-      messageDiv.style.color = "green";
-      messageDiv.textContent = "Google Sign-In successful!";
-      window.location.href = "chat.html";
-    })
-    .catch(error => {
-      messageDiv.style.color = "red";
-      messageDiv.textContent = error.message;
-    });
+    .then(() => window.location.href = "app.html")
+    .catch(error => messageDiv.textContent = error.message);
 });
 
-// 🔹 Persist login
-onAuthStateChanged(auth, user => {
-  if(user){
-    window.location.href = "chat.html";
-  }
-});
+// Redirect if logged in
+onAuthStateChanged(auth, user => { if(user) window.location.href = "app.html"; });
