@@ -7,13 +7,13 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body class="bg-gray-100 dark:bg-gray-900 transition-colors duration-300 min-h-screen flex flex-col items-center p-6">
+<body class="bg-gray-100 dark:bg-gray-900 transition-colors duration-300 min-h-screen flex flex-col items-center p-4">
 
-  <div class="max-w-md w-full bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
+  <div class="max-w-md w-full bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md mb-6">
     <h1 class="text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">50/30/20 Budget Calculator</h1>
-    
+
     <input id="income" type="number" placeholder="Monthly Income" class="w-full p-3 mb-4 border rounded dark:bg-gray-700 dark:text-gray-100" />
-    <button id="calculateBtn" class="w-full bg-blue-500 text-white p-3 rounded hover:bg-blue-600 transition mb-4">Calculate</button>
+    <button id="calculateBtn" class="w-full bg-blue-500 text-white p-3 rounded mb-4 hover:bg-blue-600 transition">Calculate</button>
 
     <div class="flex justify-between mb-4">
       <button id="pieBtn" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Pie Chart</button>
@@ -47,7 +47,7 @@
     // Logout
     document.getElementById("logoutBtn").addEventListener("click", () => signOut(auth).then(()=>window.location.href="index.html"));
 
-    // Budget logic
+    // ===== Budget Calculator =====
     const ctx = document.getElementById('budgetChart').getContext('2d');
     let chart;
 
@@ -67,17 +67,17 @@
       if(income>0) updateChart(income);
     });
 
-    document.getElementById("pieBtn").addEventListener("click", () => {
-      const income = Number(document.getElementById("income").value);
-      if(income>0) updateChart(income, "pie");
+    document.getElementById("pieBtn").addEventListener("click", () => { 
+      const income = Number(document.getElementById("income").value); 
+      if(income>0) updateChart(income,"pie"); 
     });
 
-    document.getElementById("barBtn").addEventListener("click", () => {
-      const income = Number(document.getElementById("income").value);
-      if(income>0) updateChart(income, "bar");
+    document.getElementById("barBtn").addEventListener("click", () => { 
+      const income = Number(document.getElementById("income").value); 
+      if(income>0) updateChart(income,"bar"); 
     });
 
-    // Dark mode
+    // Dark mode persistence
     if(localStorage.getItem("darkMode")==="true") document.documentElement.classList.add("dark");
   </script>
 
