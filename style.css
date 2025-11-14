@@ -1,140 +1,156 @@
-/* ---------------------- General Styles ---------------------- */
-body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #f5f5f5;
-    color: #333;
-    transition: background-color 0.3s, color 0.3s;
+/* Reset & Base */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
 }
 
+body {
+  background-color: #f7f7f7;
+  color: #222;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+/* Dark Mode */
+body.dark-mode {
+  background-color: #121212;
+  color: #f7f7f7;
+}
+
+/* Header */
 header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem 2rem;
-    background-color: #4CAF50;
-    color: white;
+  width: 100%;
+  padding: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #4CAF50;
+  color: white;
 }
 
 header h1 {
-    margin: 0;
-    font-size: 1.5rem;
+  font-size: 1.5rem;
 }
 
-header button {
-    margin-left: 10px;
-    padding: 0.5rem 1rem;
-    font-size: 0.9rem;
-    cursor: pointer;
-    border: none;
-    border-radius: 5px;
-    transition: background-color 0.2s;
+.auth-buttons button {
+  margin-left: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  border: none;
+  border-radius: 5px;
+  transition: background-color 0.3s;
 }
 
-header button:hover {
-    background-color: #45a049;
+.auth-buttons button:hover {
+  background-color: #45a049;
 }
 
-main {
-    padding: 2rem;
-}
-
-/* ---------------------- Form Styles ---------------------- */
+/* Form */
 form {
-    display: flex;
-    flex-direction: column;
-    max-width: 400px;
-    margin-bottom: 2rem;
-}
-
-form label {
-    margin-bottom: 0.5rem;
-    font-weight: bold;
+  margin: 2rem 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 form input {
-    padding: 0.5rem;
-    font-size: 1rem;
-    margin-bottom: 1rem;
-    border-radius: 5px;
-    border: 1px solid #ccc;
+  padding: 0.5rem;
+  margin: 0.5rem 0;
+  width: 200px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
 }
 
 form button {
-    background-color: #4CAF50;
-    color: white;
-    padding: 0.7rem;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: background-color 0.2s;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  border: none;
+  background-color: #4CAF50;
+  color: white;
+  border-radius: 5px;
+  transition: background-color 0.3s;
 }
 
 form button:hover {
-    background-color: #45a049;
+  background-color: #45a049;
 }
 
-/* ---------------------- Budget List Styles ---------------------- */
-#budgetList {
-    list-style: none;
-    padding: 0;
-    max-width: 400px;
-    margin-bottom: 2rem;
+/* Budget Lists */
+.budget-lists {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  flex-wrap: wrap;
 }
 
-#budgetList li {
-    background-color: #e0e0e0;
-    margin-bottom: 0.5rem;
-    padding: 0.5rem 1rem;
-    border-radius: 5px;
+.budget-lists ul {
+  list-style: none;
+  padding: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  min-width: 150px;
+  background-color: #fff;
+  transition: background-color 0.3s, color 0.3s;
 }
 
-/* ---------------------- Chart ---------------------- */
-canvas {
-    max-width: 100%;
-    margin-bottom: 2rem;
+body.dark-mode .budget-lists ul {
+  background-color: #1e1e1e;
+  color: #f7f7f7;
 }
 
-/* ---------------------- Footer ---------------------- */
-footer {
-    text-align: center;
-    padding: 1rem;
-    background-color: #333;
-    color: white;
+.budget-lists li {
+  margin-bottom: 0.5rem;
+  font-weight: bold;
 }
 
-/* ---------------------- Dark Mode ---------------------- */
-body.dark-mode {
-    background-color: #1e1e1e;
-    color: #f5f5f5;
+/* Chart Section */
+.chart-section {
+  margin-top: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-body.dark-mode header {
-    background-color: #111;
+.chart-section canvas {
+  max-width: 400px;
+  width: 100%;
+  height: 300px;
 }
 
-body.dark-mode header button {
-    background-color: #333;
-    color: #f5f5f5;
+.chart-section button {
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  border: none;
+  background-color: #4CAF50;
+  color: white;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background-color 0.3s;
 }
 
-body.dark-mode header button:hover {
-    background-color: #555;
+.chart-section button:hover {
+  background-color: #45a049;
 }
 
-body.dark-mode form input {
-    background-color: #333;
-    color: #f5f5f5;
-    border: 1px solid #555;
-}
-
-body.dark-mode #budgetList li {
-    background-color: #333;
-}
-
-body.dark-mode footer {
-    background-color: #111;
-    color: #f5f5f5;
+/* Responsive */
+@media (max-width: 600px) {
+  .budget-lists {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  header {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .auth-buttons button {
+    margin: 0.25rem;
+  }
 }
