@@ -1,76 +1,25 @@
-<!DOCTYPE html>
-<html lang="en"><head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Login Screen</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
-<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
-<script>
-    tailwind.config = {
-      darkMode: "class",
-      theme: {
-        extend: {
-          colors: {
-            primary: "#52c56a", // A vibrant green
-            "background-light": "#f3f4f6", // Light gray for light mode
-            "background-dark": "#111827", // Very dark gray for dark mode
-          },
-          fontFamily: {
-            display: ["Inter", "sans-serif"],
-          },
-          borderRadius: {
-            DEFAULT: "0.75rem", // 12px
-          },
-        },
-      },
-    };
-  </script>
-<style>
-    body {
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
-    }
-  </style>
-<style>
-    body {
-      min-height: max(884px, 100dvh);
-    }
-  </style>
-  </head>
-<body class="font-display bg-background-light dark:bg-background-dark">
-<div class="relative flex min-h-screen flex-col items-center justify-center overflow-hidden p-4">
-<div class="w-full max-w-sm">
-<div class="relative z-10 rounded-2xl bg-white/10 dark:bg-gray-800 p-8 shadow-xl backdrop-blur-sm">
-<div class="text-center">
-<h1 class="text-3xl font-bold text-gray-800 dark:text-white">Welcome Back</h1>
-<p class="mt-2 text-sm text-gray-600 dark:text-gray-400">Sign in to continue</p>
-</div>
-<form class="mt-8 space-y-6">
-<div>
-<input class="block w-full rounded-md border-0 bg-white/80 dark:bg-gray-700/80 px-4 py-3 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-primary" id="email" name="email" placeholder="Email" type="email"/>
-</div>
-<div>
-<input class="block w-full rounded-md border-0 bg-white/80 dark:bg-gray-700/80 px-4 py-3 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-primary" id="password" name="password" placeholder="Password" type="password"/>
-</div>
-<button class="w-full rounded-md bg-primary px-4 py-3 text-base font-semibold text-white shadow-sm hover:bg-opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" type="submit">
-            Login
-          </button>
+<form id="login-form" class="mt-8 space-y-6">
+    <div>
+        <input class="block w-full rounded-md ..." 
+            id="email" type="email" placeholder="Email"/>
+    </div>
+
+    <div>
+        <input class="block w-full rounded-md ..." 
+            id="password" type="password" placeholder="Password"/>
+    </div>
+
+    <button type="submit" class="w-full rounded-md bg-primary ...">Login</button>
 </form>
-<div class="my-6 flex items-center">
-<div class="flex-grow border-t border-gray-300 dark:border-gray-600"></div>
-<span class="mx-4 flex-shrink text-xs font-medium text-gray-500 dark:text-gray-400">OR</span>
-<div class="flex-grow border-t border-gray-300 dark:border-gray-600"></div>
-</div>
-<button class="flex w-full items-center justify-center gap-3 rounded-md bg-white dark:bg-gray-200 px-4 py-3 text-base font-medium text-gray-700 dark:text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-0 hover:bg-gray-50 dark:hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500" type="button">
-<img alt="Google G logo" class="h-5 w-5" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBwjFG2Qag3LKUZS2pWuuUNE8hPZocm9vbUa01-Zfjy0Y8h_kSkgt7UvqtZbbqeNoFZABNKkd6jSf4CPZk2124KdQQPpjG1kOZCpkrxBsdHBt9FD0PtrtsY8drLi-75xesboXMgYBid5P_QESqUgp8--IrzLCoY0c4p_SlnwJoIvy33MfY7XETHOM1D4YYS7ztlJx9Ei7JAvCtCwK7mCtUkuWFnBHSmZSAPVSW2X3kZLJ5SFFUalL5HyN3xv2KyBDff3LmBTiNit2qc"/>
-          Sign in with Google
-        </button>
 
-<p id="login-error" class="error-text"></p>
-  </div>
+<button id="google-login" 
+    class="flex w-full items-center justify-center gap-3 rounded-md ...">
+    <img src="https://lh3..." class="h-5 w-5"/>
+    Sign in with Google
+</button>
 
-  <!-- Must load config before app.js -->
-  <script type="module" src="firebase-config.js"></script>
-  <script type="module" src="app.js"></script>
-</body>
-</html>
+<p id="login-error" class="mt-3 text-red-500 text-sm text-center"></p>
+
+<!-- Scripts -->
+<script type="module" src="firebase-config.js"></script>
+<script type="module" src="app.js"></script>
