@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Sign up — 50/30/20 Budget Planner</title>
+<style>
+  :root {
+    --bg:#0f172a; --card:#0c1324; --muted:#94a3b8; --text:#e5e7eb; --accent:#22c55e;
+    --warn:#f59e0b; --danger:#ef4444; --input:#111827; --ring:#2563eb33; --blue:#2563eb; --border:#1f2937;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial,Noto Sans;
+    background:linear-gradient(180deg,#0b1220,var(--bg));color:var(--text);min-height:100vh;padding:16px;
+    display:grid;place-items:center;
+  }
+  .wrap{width:100%;max-width:480px}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;box-shadow:0 10px 24px rgba(0,0,0,.25)}
+  .brand{display:flex;align-items:center;gap:10px}
+  .logo{width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg,var(--blue),#6ee7b7);display:grid;place-items:center;color:#001a2c;font-weight:900}
+  .header{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:12px}
+  .header h1{margin:0;font-size:clamp(20px,3.5vw,28px)}
+  .header p{margin:0;color:var(--muted)}
+  .controls{display:grid;gap:10px}
+  .row{display:grid;grid-template-columns:1fr;gap:6px}
+  label{color:var(--muted);font-size:14px}
+  .input,.btn,select{
+    background:var(--input);color:var(--text);border:1px solid #334155;border-radius:10px;padding:10px 12px;outline:none
+  }
+  .input{display:flex;align-items:center;gap:8px}
+  .input:focus-within,select:focus{border-color:var(--blue);box-shadow:0 0 0 4px var(--ring)}
+  .input input{flex:1;background:transparent;border:none;color:var(--text);font-size:15px;min-width:0;outline:none}
+  .btn{cursor:pointer;font-weight:600}
+  .btn.primary{background:var(--blue);border-color:var(--blue)}
+  .small{font-size:12px;color:var(--muted)}
+  .text-center{text-align:center}
+  .link{color:var(--blue)}
+</style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="card">
+      <div class="header">
+        <div class="brand">
+          <div class="logo">BP</div>
+          <div>
+            <h1>Create your account</h1>
+            <p class="small">Get started with Budget Planner</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <div class="row">
+          <label for="name">Full name</label>
+          <div class="input">
+            <input id="name" type="text" placeholder="Jane Doe" autocomplete="name" />
+          </div>
+        </div>
+
+        <div class="row">
+          <label for="email">Email</label>
+          <div class="input">
+            <input id="email" type="email" placeholder="you@example.com" autocomplete="email" />
+          </div>
+        </div>
+
+        <div class="row">
+          <label for="password">Password</label>
+          <div class="input">
+            <input id="password" type="password" placeholder="At least 8 characters" autocomplete="new-password" />
+            <button id="togglePwd" class="btn" type="button" title="Show/Hide">👁</button>
+          </div>
+        </div>
+
+        <div class="row">
+          <label for="confirm">Confirm password</label>
+          <div class="input">
+            <input id="confirm" type="password" placeholder="Repeat password" autocomplete="new-password" />
+          </div>
+        </div>
+
+        <button id="signup" class="btn primary" style="width:100%;">Create account</button>
+
+        <p class="small text-center" style="margin:4px 0 0;">
+          Already have an account? <a class="link" href="index.html">Sign in</a>
+        </p>
+
+        <p id="msg" class="small" role="status" aria-live="polite"></p>
+      </div>
+    </section>
+  </main>
+
+  <script src="assets/app.js"></script>
+  <script>
+    if (Auth.isSignedIn()) location.replace('app.html');
+
+    document.getElementById('togglePwd').addEventListener('click', () => {
+      const i = document.getElementById('password');
+      i.type = i.type === 'password' ? 'text' : 'password';
+    });
+
+    document.getElementById('signup').addEventListener('click', async () => {
+      const name = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const confirm = document.getElementById('confirm').value;
+      const msg = document.getElementById('msg');
+      msg.textContent = '';
+
+      if (!name) { msg.textContent = 'Enter your name.'; return; }
+      if (!/^\S+@\S+\.\S+$/.test(email)) { msg.textContent = 'Enter a valid email.'; return; }
+      if (password.length < 8) { msg.textContent = 'Password must be at least 8 characters.'; return; }
+      if (password !== confirm) { msg.textContent = 'Passwords do not match.'; return; }
+
+      try {
+        await Auth.signIn(email, true); // demo: treat sign-up as signed-in
+        location.replace('app.html');
+      } catch {
+        msg.textContent = 'Sign up failed. Try again.';
+      }
+    });
+  </script>
+</body>
+</html>
